@@ -1,1 +1,1603 @@
-Don't really need a home page
+<!doctype html>
+<html lang="en" class="static">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Giulio Mecocci – things I built by talking to AI</title>
+<meta name="description" content="A portfolio of apps, tools and experiments, built fast with AI agents. Some open source, some closed.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Giulio Mecocci – things I built by talking to AI">
+<meta property="og:description" content="A portfolio of apps, tools and experiments, built fast with AI agents. Some open source, some closed.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20fill%3D'%23c9c9c4'%2F%3E%3Crect%20x%3D'22'%20y%3D'14'%20width%3D'20'%20height%3D'36'%20fill%3D'%23222'%2F%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<script>
+/* "static" (no pinning, no zoom) stays on unless JS runs and motion is allowed. */
+(function(){var d=document.documentElement;try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')d.dataset.theme=t}catch(e){}
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches){d.classList.remove('static');d.classList.add('typing')}})();
+</script>
+<style>
+/* ==========================================================================
+   I talk to AI: a scroll-driven portfolio.
+   Warm grey field, one orange. Everything below the intro is driven by a
+   handful of custom properties written from one rAF loop (see app.js):
+     --ip  intro progress 0..1          (on .hdr and .intro)
+     --p   chapter progress 0..1        (on each .ch)
+     --q   chapter arrival 0..1         (on each .ch, as it scrolls into place)
+   CSS turns those into phases with clamp()/calc(); only transform + opacity move.
+   ========================================================================== */
+
+:root {
+  --field: #c9c9c4; --sunk: #bbbbb5; --panel: #d3d3ce; --d1: #bdbdb7; --d2: #b5b5af;
+  --ink: #222222; --muted: #6b6b66; --hair: #a9a9a3; --orange: #ff4f00;
+  --shade: rgba(30, 30, 26, .46);
+  --soft: color-mix(in srgb, var(--ink) 74%, var(--field));
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'Inter Tight', 'Helvetica Neue', Arial, sans-serif;
+  --hh: 52px; --gut: 28px; --col: 23vw; --vh: 100vh;
+  color-scheme: light;
+}
+@supports (height: 100svh) { :root { --vh: 100svh; } }
+/* The grey field IS the identity (the "I talk to AI" GIF), so light is the
+   default for everyone; dark is opt-in via the toggle only. */
+:root[data-theme='dark'] {
+  --field: #161615; --sunk: #0e0e0d; --panel: #1f1f1d; --d1: #10100f; --d2: #0b0b0a;
+  --ink: #e4e4de; --muted: #8b8b84; --hair: #3a3a37; --shade: rgba(0, 0, 0, .62);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--field); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--field); color: var(--ink); font: 400 16px/1.5 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+a { color: inherit; }
+img, video { max-width: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+::selection { background: var(--ink); color: var(--field); }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.skip { position: fixed; left: 12px; top: -60px; z-index: 100; padding: 10px 12px; background: var(--ink); color: var(--field); font: 500 12px/1 var(--mono); text-decoration: none; }
+.skip:focus { top: 10px; }
+
+/* the block cursor, shared by the intro line, the header and the footer */
+.cur { display: inline-block; width: .6em; height: 1.08em; background: currentColor; vertical-align: -.2em; }
+.cur.off { visibility: hidden; }
+.cur.blink, html:not(.static) .foot .cur { animation: blink 1.06s steps(1) infinite; }
+@keyframes blink { 0%, 49.99% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+/* ---------------------------------------------------------------- header */
+.hdr {
+  position: fixed; inset: 0 0 auto 0; height: var(--hh); z-index: 60; pointer-events: none;
+  --ip: 0; --gp: 0; --k: .3; --gy: 16px; --wmh: 57px;
+  --m: clamp(0, calc((var(--ip) - .04) / .62), 1);
+  --e: calc(var(--m) * var(--m) * (3 - 2 * var(--m)));
+  --hb: clamp(0, calc((var(--ip) - .74) / .2), 1);
+  font-family: var(--mono);
+}
+.hdr::before { content: ''; position: absolute; inset: 0; background: var(--field); opacity: var(--hb); }
+.wm {
+  position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: auto;
+  font: 400 clamp(22px, 3.2vw, 44px) / 1.3 var(--mono); white-space: pre; text-decoration: none; color: var(--ink);
+  transform:
+    translate(calc(var(--gut) + (1 - var(--e)) * (var(--col) - var(--gut))),
+              calc(var(--gy) + (1 - var(--e)) * (var(--vh) * .55 - var(--wmh) / 2 - var(--gy))))
+    scale(calc(var(--k) + (1 - var(--e)) * (1 - var(--k))));
+}
+html.typing .wm .w:not(.on) { display: none; }
+.hdr__r {
+  position: absolute; right: var(--gut); top: 0; height: var(--hh); display: flex; align-items: center; gap: 20px;
+  font: 400 12px/1 var(--mono); letter-spacing: .04em; opacity: var(--hb); visibility: hidden; pointer-events: none;
+}
+.hdr.on .hdr__r { visibility: visible; pointer-events: auto; }
+.hdr__ch { margin: 0; white-space: nowrap; text-transform: lowercase; }
+.hdr__ch b { color: var(--orange); font-weight: 500; }
+.hdr__link { text-decoration: none; padding: 6px 0; border-bottom: 1px solid transparent; }
+.hdr__link:hover, .hdr__link.on { border-bottom-color: currentColor; }
+.theme { width: 28px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; }
+.theme i { width: 12px; height: 12px; border: 1.5px solid currentColor; border-radius: 50%; background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.hdr__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--hair); opacity: var(--hb); }
+.hdr__fill { position: absolute; inset: 0; background: var(--ink); transform-origin: 0 50%; transform: scaleX(var(--gp)); }
+.tk { position: absolute; bottom: 0; width: 1px; height: 5px; background: var(--hair); }
+.tk.on { width: 2px; height: 9px; margin-left: -.5px; background: var(--orange); }
+
+/* ----------------------------------------------------------------- intro */
+.intro { position: relative; height: calc(var(--vh) * 2); --ip: 0;
+  --dm: clamp(0, calc((var(--ip) - .04) / .6), 1);
+  --de: calc(var(--dm) * var(--dm) * (3 - 2 * var(--dm)));
+  --sm: clamp(0, calc((var(--ip) - .4) / .32), 1); }
+.intro__stage { position: sticky; top: 0; height: var(--vh); overflow: clip; }
+.dimple { --r: clamp(96px, 15.6vw, 300px); position: absolute; left: 50%; top: 0; width: 0; height: 0;
+  transform: translateY(calc(var(--de) * var(--r) * -.62)); }
+.dimple::before, .dimple::after { content: ''; position: absolute; border-radius: 50%; }
+.dimple::before { width: calc(var(--r) * 2); height: calc(var(--r) * 2); left: calc(var(--r) * -1); top: calc(var(--r) * -1.504); background: var(--d1); }
+.dimple::after { width: calc(var(--r) * 1.776); height: calc(var(--r) * 1.776); left: calc(var(--r) * -.888); top: calc(var(--r) * -1.392); background: var(--d2); }
+.intro__line { display: none; margin: 0; }
+.say {
+  position: absolute; left: var(--col); right: var(--gut); top: 50%; margin: 0;
+  opacity: var(--sm); transform: translateY(calc(-50% + (1 - var(--sm)) * 26px));
+}
+.say__name { margin: 0; font: 600 clamp(40px, 7.2vw, 112px) / .95 var(--sans); letter-spacing: -.035em; }
+.say__meta { margin: clamp(16px, 1.8vw, 26px) 0 0; font: 400 clamp(13px, 1.05vw, 15px) / 1.5 var(--mono); letter-spacing: .02em; color: var(--soft); }
+.say__meta b { color: var(--orange); font-weight: 500; }
+.say__meta .sep { margin: 0 .9em; }
+.hint { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); margin: 0; text-align: center;
+  font: 400 12px/1 var(--mono); letter-spacing: .04em; color: var(--soft); opacity: clamp(0, calc(1 - var(--ip) * 12), 1); }
+.hint span { opacity: 0; transition: opacity .7s; }
+.hint.ready span { opacity: 1; }
+
+/* -------------------------------------------------------------- chapters */
+.ch {
+  position: relative; height: calc(var(--vh) * 2.6); --p: 0; --q: 0;
+  /* phases: t = linear 0..1 across the window, s = smoothstep of t */
+  --t-num: clamp(0, calc(var(--q) * 2 - .5), 1);
+  --t-kind: clamp(0, calc(var(--p) / .1), 1);
+  --t-ttl: clamp(0, calc(var(--p) / .15), 1);
+  --e-ttl: calc(1 - (1 - var(--t-ttl)) * (1 - var(--t-ttl)) * (1 - var(--t-ttl)));
+  --t-img: clamp(0, calc((var(--p) - .08) / .32), 1);
+  --s-img: calc(var(--t-img) * var(--t-img) * (3 - 2 * var(--t-img)));
+  --t-zoom: clamp(0, calc((var(--p) - .58) / .2), 1);
+  --s-zoom: calc(var(--t-zoom) * var(--t-zoom) * (3 - 2 * var(--t-zoom)));
+  --t-clip: clamp(0, calc((var(--p) - .7) / .08), 1);
+  --s-clip: calc(var(--t-clip) * var(--t-clip) * (3 - 2 * var(--t-clip)));
+  --t-cap: clamp(0, calc((var(--p) - .7) / .2), 1);
+  --s-cap: calc(var(--t-cap) * var(--t-cap) * (3 - 2 * var(--t-cap)));
+  --t-meta: clamp(0, calc((var(--p) - .85) / .15), 1);
+  --s-meta: calc(var(--t-meta) * var(--t-meta) * (3 - 2 * var(--t-meta)));
+  /* geometry: a 16:10 frame sized from the viewport height, never wider than 84vw */
+  --namesz: clamp(44px, min(8vw, calc(var(--vh) * .105)), 128px);
+  --titleh: calc(var(--namesz) * 1.02 + 8px);
+  --metah: 56px;
+  --fh: min(calc(var(--vh) * .72), calc(var(--vh) - var(--hh) - var(--titleh) - var(--metah) - 40px), calc(84vw / 1.6), calc((100vw - 400px) / 1.6));
+  --fw: calc(var(--fh) * 1.6);
+  --pw: min(var(--fw), calc(var(--fh) * var(--par)));
+  --ph: calc(var(--pw) / var(--par));
+}
+.stage { position: sticky; top: 0; height: var(--vh); padding-top: var(--hh); display: flex; align-items: center; justify-content: center; overflow: clip; }
+.grp { position: relative; width: var(--fw); display: flex; flex-direction: column; }
+
+.ttl { height: var(--titleh); margin-bottom: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; column-gap: .3em; }
+.num { margin: 0 0 calc(var(--namesz) * .1); font: 500 calc(var(--namesz) * .4) / 1 var(--mono); color: var(--orange); letter-spacing: -.02em;
+  opacity: var(--t-num); transform: translateY(calc((1 - var(--t-num)) * 20px)); }
+.name { margin: 0; font: 600 var(--namesz) / .95 var(--sans); letter-spacing: -.03em; min-width: 0; }
+.mask { display: block; overflow: hidden; padding: .06em 0 .17em; margin: -.06em 0 -.17em; }
+.rise { display: block; white-space: nowrap; transform: translateY(calc((1 - var(--e-ttl)) * 110%)); }
+.kind { margin: 0 0 .5em; font: 400 13px/1.2 var(--mono); letter-spacing: .04em; text-align: right; white-space: nowrap; opacity: var(--t-kind); }
+
+.cam { position: relative; width: var(--fw); height: var(--fh); --r: calc(12px * (1 - var(--s-img)));
+  transform: scale(calc(.78 + .22 * var(--s-img))); opacity: clamp(0, calc(var(--t-img) * 3), 1); }
+.frame { position: absolute; inset: 0; overflow: hidden; background: var(--matte, var(--sunk)); border-radius: var(--r); box-shadow: 0 34px 70px -30px var(--shade), 0 2px 6px -2px var(--shade); }
+.zoom { position: absolute; inset: 0; display: grid; place-items: center; transform-origin: 0 0;
+  transform: translate(calc(var(--zx, 0px) * var(--s-zoom)), calc(var(--zy, 0px) * var(--s-zoom))) scale(calc(1 + (var(--zs, 1) - 1) * var(--s-zoom))); }
+.plate { width: var(--pw); height: var(--ph); }
+.plate img { display: block; width: 100%; height: 100%; }
+
+.clipw { position: absolute; inset: 0; overflow: hidden; border-radius: var(--r); opacity: var(--s-clip); pointer-events: none; }
+.clipb { position: absolute; inset: 0; }
+.clipb video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ch--fb .clipb video { object-fit: contain; background: var(--sunk); }
+.ch--portrait .clipb { inset: auto; left: 50%; top: 50%; width: var(--cw, calc(var(--fh) * .5)); height: var(--chh, calc(var(--fh) * .9)); transform: translate(-50%, -50%);
+  border-radius: 22px; overflow: hidden; background: #000; box-shadow: 0 0 0 100vmax rgba(8, 8, 8, .5); }
+.ch--portrait .clipb video { object-fit: cover; }
+
+/* callouts: an orange dot on (x, y), a hairline to the nearest frame edge, a mono label */
+.calls { list-style: none; margin: 0; padding: 0; position: absolute; left: calc((var(--fw) - var(--pw)) / 2); top: calc((var(--fh) - var(--ph)) / 2); width: var(--pw); height: var(--ph); }
+.call { position: absolute; left: calc(var(--x) * 100%); top: calc(var(--y) * 100%); width: 0; height: 0;
+  --t: clamp(0, calc((var(--p) - .35 - var(--i) * .05) / .12), 1);
+  --out: clamp(0, calc((.64 - var(--p)) / .06), 1);
+  --ext: 24px;
+  --tl: clamp(0, calc((var(--t) - .25) / .55), 1);
+  --len: calc(var(--x) * var(--pw) + (var(--fw) - var(--pw)) / 2 + var(--ext));
+  opacity: var(--out); }
+.call.r { --len: calc((1 - var(--x)) * var(--pw) + (var(--fw) - var(--pw)) / 2 + var(--ext)); }
+.dot { position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--orange);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 2px 8px rgba(0, 0, 0, .4); transform: scale(clamp(0, calc(var(--t) * 3.2), 1)); font-style: normal; }
+.dot b { display: none; font: 600 10px/1 var(--mono); color: #1a1a1a; }
+.feat .dot { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 1px; }
+.ln { position: absolute; top: -.5px; height: 1px; width: var(--len); background: var(--ink); box-shadow: 0 0 0 .5px rgba(255, 255, 255, .32);
+  transform: scaleX(var(--tl)); }
+.l .ln { right: 0; transform-origin: 100% 50%; }
+.r .ln { left: 0; transform-origin: 0 50%; }
+.lbl { position: absolute; top: calc(var(--ly, 0) * var(--ph)); white-space: nowrap; font: 500 12px/1 var(--mono); letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 0 8px var(--field), 0 0 2px var(--field);
+  opacity: clamp(0, calc(var(--tl) * 2.5 - .5), 1); }
+.lbl em { font-style: normal; color: var(--muted); margin-right: .55em; }
+.l .lbl { right: calc(var(--len) + 8px); transform: translate(calc(var(--len) * (1 - var(--tl))), -50%); } /* the label rides the tip of its line */
+.r .lbl { left: calc(var(--len) + 8px); transform: translate(calc(var(--len) * (var(--tl) - 1)), -50%); }
+.legend { display: none; }
+
+/* caption panel and meta row */
+.cap { position: absolute; z-index: 3; left: -36px; bottom: calc(var(--metah) + 12px + 26px); width: min(420px, 78%); padding: 18px 22px 22px; background: var(--field); border: 1px solid var(--hair); box-shadow: 0 22px 44px -22px var(--shade);
+  opacity: var(--s-cap); transform: translateY(calc((1 - var(--s-cap)) * 44px)); }
+.kick { margin: 0 0 10px; font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.cap h3 { margin: 0 0 8px; font: 600 28px/1.05 var(--sans); letter-spacing: -.02em; }
+.txt { margin: 0; font: 400 15px/1.4 var(--sans); }
+.meta { height: var(--metah); margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 24px; align-items: center;
+  opacity: var(--s-meta); transform: translateY(calc((1 - var(--s-meta)) * 14px)); visibility: hidden; }
+.ch.end .meta { visibility: visible; }
+.tag { margin: 0; font: 500 16px/1.25 var(--sans); }
+.tech { margin: 0; font: 400 12px/1.5 var(--mono); color: var(--soft); }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.btn { display: inline-flex; gap: .5em; align-items: center; padding: 8px 10px; border: 1px solid var(--ink); border-radius: 2px; background: transparent; color: var(--ink);
+  font: 500 12px/1 var(--mono); letter-spacing: .04em; text-decoration: none; cursor: pointer; transition: background .15s, color .15s; }
+.btn:hover { background: var(--ink); color: var(--field); }
+.closed { font: 400 12px/1 var(--mono); letter-spacing: .04em; color: var(--soft); padding: 8px 2px; }
+
+/* --------------------------------------------------------------- compact */
+@media (max-width: 1099px) {
+  .ch {
+    --namesz: clamp(36px, 11vw, 64px); --metah: 0px;
+    --fw: min(calc(100vw - 2 * var(--gut)), calc(var(--vh) * .8), 920px);
+    --fh: calc(var(--fw) / 1.6);
+  }
+  .ch--portrait { --fh: calc(var(--fw) / 1.15); }
+  .ttl { height: auto; grid-template-columns: auto 1fr; align-items: baseline; row-gap: 2px; }
+  .num { margin: 0; font-size: 22px; grid-row: 1; }
+  .kind { grid-row: 1; grid-column: 2; margin: 0; }
+  .name { grid-column: 1 / -1; grid-row: 2; }
+  .calls .ln, .calls .lbl { display: none; }
+  .dot { width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+  .dot b { display: block; }
+  .feat .dot { width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+  .under { position: relative; margin-top: 16px; min-height: 210px; }
+  .legend, .cap, .meta { position: absolute; left: 0; right: 0; top: 0; width: auto; bottom: auto; }
+  .legend { display: block; margin: 0; padding: 0; list-style: none; }
+  .legend li { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--hair); font: 500 12px/1 var(--mono); letter-spacing: .04em; text-transform: uppercase;
+    --t: clamp(0, calc((var(--p) - .35 - var(--i) * .05) / .12), 1);
+    --out: clamp(0, calc((.64 - var(--p)) / .06), 1);
+    opacity: min(var(--t), var(--out)); transform: translateX(calc((1 - var(--t)) * -10px)); }
+  .legend .dot { position: static; flex: none; margin: 0; transform: none; box-shadow: none; }
+  .cap { left: 0; width: auto; opacity: min(var(--s-cap), calc(1 - var(--s-meta) * 1.4)); }
+  .meta { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; height: auto; margin: 0; }
+  /* the faded-out caption shares this spot; keep the buttons on top (meta is
+     visibility:hidden until .end, so it never blocks anything earlier) */
+  .meta { z-index: 4; }
+  .acts { justify-content: flex-start; }
+}
+@media (max-width: 767px) {
+  :root { --hh: 48px; --gut: 20px; --col: max(var(--gut), 11vw); }
+  .ch { height: calc(var(--vh) * 1.8); }
+  .hdr__r { gap: 12px; }
+  .hdr__ch { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  .say__name { font-size: clamp(32px, 10vw, 52px); }
+  .say__meta .sep, .say__meta .sep + span { display: none; } /* the bottom hint already says scroll */
+}
+
+/* ----------------------------------------------------------------- index */
+.idx { max-width: 1440px; margin: 0 auto; padding: 18vh var(--gut) 14vh; }
+.idx:focus { outline: none; }
+.idx__h { margin: 0; font: 600 clamp(44px, 8vw, 128px) / .9 var(--sans); letter-spacing: -.03em; }
+.idx__intro { max-width: 54ch; margin: 28px 0 0; font: 400 clamp(17px, 1.5vw, 21px) / 1.4 var(--sans); }
+.idx__tally { margin: 18px 0 0; font: 400 12px/1 var(--mono); letter-spacing: .04em; color: var(--soft); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin: 44px 0 18px; }
+.fchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip { padding: 8px 10px; border: 1px solid var(--hair); border-radius: 2px; background: transparent; font: 500 11px/1 var(--mono); letter-spacing: .04em; cursor: pointer; }
+.fchip:hover { border-color: var(--ink); }
+.fchip[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--field); }
+.fchip .n { opacity: .6; margin-left: .35em; }
+.fchip:disabled { opacity: .4; cursor: default; }
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font: 500 11px/1 var(--mono); letter-spacing: .04em; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch__track { width: 30px; height: 16px; border: 1px solid var(--ink); border-radius: 8px; position: relative; transition: background .15s; }
+.switch__track::after { content: ''; position: absolute; left: 2px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); transition: transform .15s, background .15s; }
+.switch input:checked + .switch__track { background: var(--ink); }
+.switch input:checked + .switch__track::after { transform: translateX(14px); background: var(--field); }
+.switch input:focus-visible + .switch__track { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.spec { width: 100%; border-collapse: collapse; font: 400 12px/1.3 var(--mono); letter-spacing: .02em; }
+.spec th { padding: 10px 14px 10px 0; text-align: left; font-weight: 500; color: var(--soft); border-bottom: 1px solid var(--ink); white-space: nowrap; }
+.spec td { padding: 16px 14px 16px 0; border-bottom: 1px solid var(--hair); vertical-align: baseline; }
+.spec tr[hidden] { display: none; }
+.c-no { width: 4.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row:hover .c-no, .row:focus-within .c-no { color: var(--orange); }
+.c-nm a { font: 600 clamp(22px, 2.4vw, 34px) / 1.05 var(--sans); letter-spacing: -.025em; text-decoration: none; }
+.c-nm a::after { content: ''; position: absolute; inset: 0; }
+.row { position: relative; cursor: pointer; transition: background .12s; }
+.row:hover, .row:focus-within { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.c-tag { display: block; margin-top: 4px; font: 400 12px/1.3 var(--mono); color: var(--soft); }
+.c-lv a { position: relative; z-index: 1; white-space: nowrap; }
+.c-lv a:hover { text-decoration: underline; }
+.none { padding: 40px 0; }
+.empty-note { font: 400 14px/1.4 var(--mono); }
+
+/* ---------------------------------------------------------------- footer */
+.foot { max-width: 1440px; margin: 0 auto; padding: 0 var(--gut) 8vh; border-top: 1px solid var(--hair); padding-top: 8vh; display: grid; gap: 14px; justify-items: start; }
+.foot__name { margin: 0; font: 600 clamp(44px, 8vw, 128px) / .95 var(--sans); letter-spacing: -.03em; }
+.foot__name .cur { margin-left: .06em; vertical-align: -.06em; width: .34em; height: .8em; }
+.foot__links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.foot__links a { padding: 8px 10px; border: 1px solid var(--ink); border-radius: 2px; font: 500 11px/1 var(--mono); letter-spacing: .04em; text-decoration: none; }
+.foot__links a:hover { background: var(--ink); color: var(--field); }
+.foot__note, .foot__copy { margin: 0; font: 400 12px/1.4 var(--mono); letter-spacing: .02em; color: var(--soft); }
+.foot__copy { margin-top: 24px; }
+
+/* ---------------------------------------------------------------- dialog */
+dialog { color: var(--ink); }
+.modal { width: min(1120px, calc(100vw - 2 * var(--gut))); max-height: calc(100dvh - 2 * var(--gut)); margin: auto; padding: 0; border: 1px solid var(--ink); background: var(--field); overflow: hidden; }
+.modal::backdrop, .lightbox::backdrop { background: rgba(14, 14, 13, .62); }
+.modal[open] { animation: rise .22s cubic-bezier(.2, .7, .2, 1); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.modal__scroll { max-height: calc(100dvh - 2 * var(--gut) - 2px); overflow: auto; overscroll-behavior: contain; }
+.modal__scroll:focus { outline: none; }
+.x { position: absolute; right: 12px; top: 12px; z-index: 2; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--ink); border-radius: 2px; background: var(--field); cursor: pointer; }
+.x:hover { background: var(--ink); color: var(--field); }
+.pd { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.pd__media { padding: 20px; border-right: 1px solid var(--hair); min-width: 0; }
+.pd__stage { background: var(--sunk); aspect-ratio: 16 / 10; display: grid; place-items: center; }
+.pd__stage img, .pd__stage video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.pd__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-top: 8px; }
+.thumb { padding: 0; border: 1px solid var(--hair); background: var(--sunk); cursor: zoom-in; aspect-ratio: 16 / 10; overflow: hidden; }
+.thumb:hover { border-color: var(--ink); }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pd__info { padding: 28px 28px 28px; min-width: 0; }
+.pd__title { margin: 0 44px 0 0; font: 600 clamp(36px, 4.6vw, 64px) / .95 var(--sans); letter-spacing: -.03em; }
+.pd__tag { margin: 12px 0 0; font: 500 17px/1.3 var(--sans); }
+.pd__desc { margin: 18px 0 0; font: 400 15px/1.5 var(--sans); max-width: 62ch; }
+.pd__hl { margin: 18px 0 0; padding: 0; list-style: none; font: 400 13px/1.45 var(--mono); }
+.pd__hl li { padding: 9px 0 9px 18px; border-top: 1px solid var(--hair); position: relative; }
+.pd__hl li::before { content: ''; position: absolute; left: 0; top: 1.05em; width: 6px; height: 6px; background: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 0; padding: 0; list-style: none; }
+.chips li { padding: 5px 8px; border: 1px solid var(--hair); font: 400 11px/1 var(--mono); letter-spacing: .02em; }
+.pd__links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 22px; }
+.pd__meta { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; border-top: 1px solid var(--hair); font: 400 12px/1.3 var(--mono); }
+.pd__meta div { padding: 14px 20px; border-right: 1px solid var(--hair); }
+.pd__meta div:last-child { border-right: 0; }
+.pd__meta dt { color: var(--soft); margin-bottom: 4px; }
+.pd__meta dd { margin: 0; }
+.lightbox { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; }
+.lightbox__fig { margin: 0; width: 100%; height: 100%; display: grid; place-items: center; padding: 56px 72px; }
+.lightbox__fig img { max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 30px 80px rgba(0, 0, 0, .5); }
+.lb-btn { position: absolute; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--ink); border-radius: 2px; background: var(--field); cursor: pointer; }
+.lb-close { right: 16px; top: 16px; }
+.lb-prev { left: 16px; top: 50%; margin-top: -20px; }
+.lb-next { right: 16px; top: 50%; margin-top: -20px; }
+.lightbox.single .lb-prev, .lightbox.single .lb-next { display: none; }
+.lb-count { position: absolute; left: 0; right: 0; bottom: 18px; margin: 0; text-align: center; font: 400 11px/1 var(--mono); letter-spacing: .04em; color: #e4e4de; }
+@media (max-width: 860px) {
+  .pd { grid-template-columns: 1fr; }
+  .pd__media { border-right: 0; border-bottom: 1px solid var(--hair); padding: 14px; }
+  .pd__info { padding: 22px 18px; }
+  .pd__meta { grid-template-columns: 1fr 1fr; }
+  .pd__meta div:nth-child(2) { border-right: 0; }
+  .pd__meta div:nth-child(-n+2) { border-bottom: 1px solid var(--hair); }
+  .lightbox__fig { padding: 56px 12px; }
+}
+@media (max-width: 767px) {
+  .spec thead .c-ct, .spec thead .c-yr, .spec .c-ct, .spec .c-yr { display: none; }
+  .spec td { padding: 14px 10px 14px 0; }
+  .c-no { width: 2.8em; }
+}
+
+/* ----------------------------------------------------------------- static
+   Reduced motion, or no JS: no pinning, no zoom. Each chapter reads as a
+   plain section: the stage with its callouts, then the clip as a still.     */
+html.static .hdr { --ip: 1; }
+html.static .wm { font-size: 13px; transform: translate(var(--gut), 16px); }
+html.static .cur { animation: none; }
+html.static .hint { display: none; }
+html.static .intro { height: auto; }
+html.static .intro__stage { position: relative; height: auto; min-height: var(--vh); padding: 0 var(--gut); overflow: visible; }
+html.static .intro__line { display: block; position: absolute; left: var(--col); top: 33%; font: 400 clamp(22px, 3.2vw, 44px) / 1.3 var(--mono); transform: translateY(-50%); }
+html.static .say { position: absolute; left: var(--col); top: 46%; opacity: 1; transform: none; }
+html.static .ch { height: auto; padding: 12vh 0 4vh; border-top: 1px solid var(--hair);
+  --t-num: 1; --t-kind: 1; --e-ttl: 1; --s-img: 1; --t-img: 1; --s-zoom: 0; --s-clip: 1; --s-cap: 1; --s-meta: 1; }
+html.static .stage { position: relative; height: auto; padding: 0 var(--gut); display: block; overflow: visible; }
+html.static .grp { margin: 0 auto; }
+html.static .cam { height: auto; }
+html.static .frame { position: relative; height: var(--fh); }
+html.static .clipw { position: relative; inset: auto; height: var(--fh); margin-top: 20px; pointer-events: auto; }
+html.static .clipb video { background: var(--sunk); }
+html.static .call, html.static .legend li { --t: 1; --out: 1; }
+html.static .meta { visibility: visible; height: auto; padding: 18px 0; }
+html.static .cap { position: static; width: auto; max-width: 520px; margin: 20px 0 0; transform: none; opacity: 1; }
+html.static .ch--portrait .clipb { box-shadow: none; }
+@media (max-width: 1099px) {
+  html.static .under { min-height: 0; display: grid; gap: 14px; }
+  html.static .legend, html.static .cap, html.static .meta { position: static; }
+  html.static .ch--portrait .clipw { height: calc(var(--fw) * 1.15); }
+}
+@media (min-width: 1100px) {
+  html.static .cap { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .row, .switch__track, .switch__track::after { transition: none; }
+  .modal[open] { animation: none; }
+}
+html.static .hdr__r { visibility: visible; pointer-events: auto; }
+body:has(dialog[open]) { overflow: hidden; }
+
+</style>
+</head>
+<body>
+<a class="skip" href="#index">Skip to the index</a>
+
+<header class="hdr" id="hdr">
+  <a class="wm" id="wm" href="#top" aria-label="I talk to AI, back to the top"><span class="wm__t"><span class="w">I</span><span class="w"> talk</span><span class="w"> to</span><span class="w"> AI</span></span><i class="cur" aria-hidden="true"></i></a>
+  <div class="hdr__r" id="hdr-r">
+    <p class="hdr__ch" id="hdr-ch" aria-live="off"></p>
+    <a class="hdr__link" href="#index" id="to-index">index</a>
+    <button type="button" class="theme" id="theme" aria-label="Switch theme"><i aria-hidden="true"></i></button>
+  </div>
+  <div class="hdr__bar" id="bar" aria-hidden="true"><i class="hdr__fill"></i></div>
+</header>
+
+<main>
+  <section class="intro" id="top" aria-label="Intro">
+    <div class="intro__stage">
+      <div class="dimple" aria-hidden="true"></div>
+      <p class="intro__line" aria-hidden="true"><span class="intro__t">I talk to AI</span><i class="cur"></i></p>
+      <div class="say"><h1 class="say__name">Giulio Mecocci</h1><p class="say__meta"><b>23</b> things I've built that way<span class="sep" aria-hidden="true">·</span><span aria-hidden="true">scroll ↓</span></p></div>
+      <p class="hint" aria-hidden="true"><span id="hint">scroll ↓</span></p>
+    </div>
+  </section>
+
+  <div id="story" aria-label="Projects, one chapter each">
+  <article class="ch" id="c-trim-lab" data-slug="trim-lab" data-i="0" data-o="landscape" data-focus="0.2507,0.0733,0.7403,0.74" style="--par:1.6" aria-labelledby="n-trim-lab">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">01</p>
+        <h2 class="name" id="n-trim-lab"><span class="mask"><span class="rise">Trim Lab</span></span></h2>
+        <p class="kind">web app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/trim-lab/stage.jpg" alt="Trim Lab interface" width="1600" height="1000" loading="eager" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/trim-lab/highlight.mp4" data-poster="media/trim-lab/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call r feat" style="--x:0.7;--y:0.43;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> wind dye</span></li><li class="call l" style="--x:0.2;--y:0.213;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> trim sliders</span></li><li class="call l" style="--x:0.476;--y:0.117;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> boat speed</span></li><li class="call r" style="--x:0.62;--y:0.117;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> heel</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>wind dye</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>trim sliders</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>boat speed</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>heel</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Wind-dye streamlines</h3><p class="txt">Pull the mainsheet: the boom swings, the cloth reshapes, dye streaks bend around the rig, and speed and heel update.</p></aside>
+        <div class="meta">
+          <p class="tag">Learn sail trim on a Colgate 26, line by line</p>
+          <p class="tech">JavaScript / Babylon.js / WebGL / Python / Blender / GitHub Pages</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/trim-lab" target="_blank" rel="noopener" aria-label="Trim Lab source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><a class="btn" href="https://gm2211.github.io/trim-lab/" target="_blank" rel="noopener" aria-label="Trim Lab live site (opens in a new tab)">live <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="trim-lab" aria-label="Details for Trim Lab">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-tracked" data-slug="tracked" data-i="1" data-o="landscape" data-focus="0.1775,0.096,0.8125,0.812" style="--par:1.6" aria-labelledby="n-tracked">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">02</p>
+        <h2 class="name" id="n-tracked"><span class="mask"><span class="rise">Tracked</span></span></h2>
+        <p class="kind">web app · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/tracked/stage.jpg" alt="Tracked interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/tracked/highlight.mp4" data-poster="media/tracked/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.405;--y:0.335;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> speed traces</span></li><li class="call r" style="--x:0.874;--y:0.474;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> map cursor</span></li><li class="call r" style="--x:0.6725;--y:0.867;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> gap to best</span></li><li class="call l" style="--x:0.075;--y:0.48;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> lap list</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>speed traces</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>map cursor</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>gap to best</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>lap list</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Linked lap compare</h3><p class="txt">Hover along three laps on one distance axis: speed, throttle, brake, the gap to your best and a map dot move together.</p></aside>
+        <div class="meta">
+          <p class="tag">Track-day telemetry analysis in the browser</p>
+          <p class="tech">Python / FastAPI / NumPy / PyArrow / JavaScript / uPlot / Postgres / Docker / Terraform</p>
+          <div class="acts"><a class="btn" href="https://tracked.cc" target="_blank" rel="noopener" aria-label="Tracked live site (opens in a new tab)">live <span aria-hidden="true">↗</span></a><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="tracked" aria-label="Details for Tracked">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-icbm-game" data-slug="icbm-game" data-i="2" data-o="landscape" data-focus="0.2,0.0711,0.8,0.8889" style="--par:1.7778;--matte:#465148" aria-labelledby="n-icbm-game">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">03</p>
+        <h2 class="name" id="n-icbm-game"><span class="mask"><span class="rise">ICBM</span></span></h2>
+        <p class="kind">game · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/icbm-game/stage.jpg" alt="ICBM interface" width="1600" height="900" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/icbm-game/highlight.mp4" data-poster="media/icbm-game/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call r" style="--x:0.64;--y:0.41;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> silo doors</span></li><li class="call r feat" style="--x:0.775;--y:0.738;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> launch state</span></li><li class="call l" style="--x:0.085;--y:0.81;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> minimap</span></li><li class="call l" style="--x:0.35;--y:0.117;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> command bar</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>silo doors</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>launch state</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>minimap</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>command bar</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Silo launch sequence</h3><p class="txt">A missile silo launches in stages: doors open, ignition, then boost. The panel tracks each step and refunds materiel if cancelled early.</p></aside>
+        <div class="meta">
+          <p class="tag">Single-player RTS where trucks haul one resource</p>
+          <p class="tech">Unreal Engine 5.8 / C++ / Blender / macOS</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="icbm-game" aria-label="Details for ICBM">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-ecg" data-slug="ecg" data-i="3" data-o="landscape" data-focus="0.025,0.0575,0.95,0.9425" style="--par:1.6" aria-labelledby="n-ecg">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">04</p>
+        <h2 class="name" id="n-ecg"><span class="mask"><span class="rise">ECG Studio</span></span></h2>
+        <p class="kind">web app · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/ecg/shot-1.jpg" alt="ECG Studio interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/ecg/highlight.mp4" data-poster="media/ecg/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.296;--y:0.43;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> 3d heart</span></li><li class="call r" style="--x:0.76;--y:0.3;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> lead strips</span></li><li class="call l" style="--x:0.366;--y:0.744;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> electrodes</span></li><li class="call l" style="--x:0.075;--y:0.934;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> scenario</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>3d heart</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>lead strips</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>electrodes</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>scenario</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Infarct territory, lead by lead</h3><p class="txt">Pick an infarct scenario and the 3D heart lights up the affected wall while the 12-lead strips flag the abnormal leads.</p></aside>
+        <div class="meta">
+          <p class="tag">Learn ECG leads by seeing the heart behind them</p>
+          <p class="tech">JavaScript / three.js / WebGL / HTML/CSS</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="ecg" aria-label="Details for ECG Studio">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-skim" data-slug="skim" data-i="4" data-o="landscape" data-focus="0,0.05,0.5,0.5" style="--par:1.6" aria-labelledby="n-skim">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">05</p>
+        <h2 class="name" id="n-skim"><span class="mask"><span class="rise">Skim</span></span></h2>
+        <p class="kind">desktop app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/skim/poster.jpg" alt="Skim interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/skim/highlight.mp4" data-poster="media/skim/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.075;--y:0.309;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> ai inbox</span></li><li class="call r feat" style="--x:0.263;--y:0.26;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> priority tiers</span></li><li class="call l" style="--x:0.42;--y:0.21;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> topic chips</span></li><li class="call r" style="--x:0.7;--y:0.37;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> reader pane</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>ai inbox</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>priority tiers</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>topic chips</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>reader pane</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>AI Inbox triage</h3><p class="txt">Every unread article is scored 1 to 5 and sorted into Must read and Important tiers, each tagged with a topic chip.</p></aside>
+        <div class="meta">
+          <p class="tag">RSS reader for the age of AI</p>
+          <p class="tech">Tauri 2 / React / Rust / SQLite / SwiftUI / llama.cpp / MLX</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/skim" target="_blank" rel="noopener" aria-label="Skim source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><a class="btn" href="https://gm2211.github.io/skim/" target="_blank" rel="noopener" aria-label="Skim live site (opens in a new tab)">live <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="skim" aria-label="Details for Skim">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-motive" data-slug="motive" data-i="5" data-o="landscape" data-focus="0.1819,0.1889,0.8,0.8" style="--par:1.6" aria-labelledby="n-motive">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">06</p>
+        <h2 class="name" id="n-motive"><span class="mask"><span class="rise">Motive</span></span></h2>
+        <p class="kind">web app · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/motive/stage.jpg" alt="Motive interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/motive/highlight.mp4" data-poster="media/motive/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call r" style="--x:0.824;--y:0.162;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> tune score</span></li><li class="call r feat" style="--x:0.891;--y:0.29;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> weight sliders</span></li><li class="call l" style="--x:0.216;--y:0.462;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> fit ring</span></li><li class="call l" style="--x:0.4375;--y:0.726;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> factor points</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>tune score</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>weight sliders</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>fit ring</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>factor points</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Explainable fit score</h3><p class="txt">Dragging a scoring weight re-ranks cached listings live, while the expanded breakdown shows each factor&#39;s points and FIT change with it.</p></aside>
+        <div class="meta">
+          <p class="tag">Car-market workspace that ranks listings with a score it explains</p>
+          <p class="tech">TypeScript / React / Vite / Express / SQLite / Playwright / MCP</p>
+          <div class="acts"><a class="btn" href="https://motive-vp3s.onrender.com" target="_blank" rel="noopener" aria-label="Motive live site (opens in a new tab)">live <span aria-hidden="true">↗</span></a><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="motive" aria-label="Details for Motive">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-argos" data-slug="argos" data-i="6" data-o="landscape" data-focus="0.0667,0.3467,0.64,0.64" style="--par:1.6" aria-labelledby="n-argos">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">07</p>
+        <h2 class="name" id="n-argos"><span class="mask"><span class="rise">Argos</span></span></h2>
+        <p class="kind">ai tooling · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/argos/shot-1.jpg" alt="Argos interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/argos/highlight.mp4" data-poster="media/argos/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.161;--y:0.122;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> inbox tab</span></li><li class="call l feat" style="--x:0.129;--y:0.543;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> approve button</span></li><li class="call r" style="--x:0.5;--y:0.462;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> gate question</span></li><li class="call l" style="--x:0.212;--y:0.861;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> investigate card</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>inbox tab</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>approve button</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>gate question</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>investigate card</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Tap-to-approve decisions</h3><p class="txt">Blocked work surfaces as a card: a recommended Approve, a Reject that pauses for guidance, and a line explaining what each does.</p></aside>
+        <div class="meta">
+          <p class="tag">Local dispatcher that runs coding agents across many repos.</p>
+          <p class="tech">Rust / Python / JavaScript / SQLite / Discord API</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="argos" aria-label="Details for Argos">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-specify" data-slug="specify" data-i="7" data-o="landscape" data-focus="0,0,0.75,0.75" style="--par:1.6" aria-labelledby="n-specify">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">08</p>
+        <h2 class="name" id="n-specify"><span class="mask"><span class="rise">Specify</span></span></h2>
+        <p class="kind">ai tooling · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/specify/stage.jpg" alt="Specify interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/specify/highlight.mp4" data-poster="media/specify/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.1075;--y:0.16;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> failing check</span></li><li class="call r" style="--x:0.2675;--y:0.216;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> error message</span></li><li class="call r feat" style="--x:0.5125;--y:0.4112;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> reason flag</span></li><li class="call l" style="--x:0.1025;--y:0.4664;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> passing check</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>failing check</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>error message</li><li class="feat" style="--i:2"><i class="dot"><b>3</b></i>reason flag</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>passing check</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>A gate that wants a reason</h3><p class="txt">spec check fails when code changes without a spec change; passing --reason records why the spec is untouched and the gate clears.</p></aside>
+        <div class="meta">
+          <p class="tag">Version-controlled behavior specs that coding agents keep honest</p>
+          <p class="tech">TypeScript / Node.js / YAML / JSON Schema / MCP</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/specify" target="_blank" rel="noopener" aria-label="Specify source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="specify" aria-label="Details for Specify">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-byos" data-slug="byos" data-i="8" data-o="landscape" data-focus="0.172,0.291,0.656,0.656" style="--par:1.6" aria-labelledby="n-byos">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">09</p>
+        <h2 class="name" id="n-byos"><span class="mask"><span class="rise">BYOS</span></span></h2>
+        <p class="kind">ai tooling · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/byos/stage.jpg" alt="BYOS interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/byos/highlight.mp4" data-poster="media/byos/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.3;--y:0.24;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> state picker</span></li><li class="call l" style="--x:0.36;--y:0.54;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> one-time code</span></li><li class="call r feat" style="--x:0.78;--y:0.44;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> ai pill</span></li><li class="call r" style="--x:0.69;--y:0.9;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> model picker</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>state picker</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>one-time code</li><li class="feat" style="--i:2"><i class="dot"><b>3</b></i>ai pill</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>model picker</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Sign-in to model picker</h3><p class="txt">A device-code sign-in card steps through its states, then an AI pill opens a model and effort picker. Sample provider, synthetic data.</p></aside>
+        <div class="meta">
+          <p class="tag">Let apps use people&#39;s own AI subscriptions</p>
+          <p class="tech">TypeScript / React / Rust / WebAssembly / Vite</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="byos" aria-label="Details for BYOS">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-turbol" data-slug="turbol" data-i="9" data-o="landscape" data-focus="0.0236,0.0844,0.9,0.9" style="--par:1.6" aria-labelledby="n-turbol">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">10</p>
+        <h2 class="name" id="n-turbol"><span class="mask"><span class="rise">Turbol</span></span></h2>
+        <p class="kind">web app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/turbol/poster.jpg" alt="Turbol interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/turbol/highlight.mp4" data-poster="media/turbol/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.374;--y:0.361;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> aircraft</span></li><li class="call l" style="--x:0.477;--y:0.892;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> edr profile</span></li><li class="call r" style="--x:0.803;--y:0.55;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> edr scale</span></li><li class="call r" style="--x:0.806;--y:0.132;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> forecast clock</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>aircraft</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>edr profile</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>edr scale</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>forecast clock</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Flying the turbulence forecast</h3><p class="txt">Rendered from decoded NOAA GTG v4 forecasts: the aircraft crosses forecast hours and the profile reads EDR at its position.</p></aside>
+        <div class="meta">
+          <p class="tag">How bumpy will your flight be? NOAA turbulence data</p>
+          <p class="tech">Scala / http4s / Vue / Leaflet / Python / GRIB2 / Terraform</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/turbol" target="_blank" rel="noopener" aria-label="Turbol source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="turbol" aria-label="Details for Turbol">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-claude-plugins" data-slug="claude-plugins" data-i="10" data-o="landscape" data-focus="0,0,0.625,0.625" style="--par:1.6" aria-labelledby="n-claude-plugins">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">11</p>
+        <h2 class="name" id="n-claude-plugins"><span class="mask"><span class="rise">claude-plugins</span></span></h2>
+        <p class="kind">ai tooling · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/claude-plugins/stage.jpg" alt="claude-plugins interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/claude-plugins/highlight.mp4" data-poster="media/claude-plugins/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.109;--y:0.12;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> tab bar</span></li><li class="call r" style="--x:0.3145;--y:0.12;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> completed mark</span></li><li class="call l feat" style="--x:0.471;--y:0.12;--i:2;--ly:0.06"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> waiting mark</span></li><li class="call l" style="--x:0.37;--y:0.272;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> hook call</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>tab bar</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>completed mark</li><li class="feat" style="--i:2"><i class="dot"><b>3</b></i>waiting mark</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>hook call</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Tab marks for waiting agents</h3><p class="txt">A Zellij plugin turns Claude Code hook signals into tab marks: an hourglass while an agent waits, a check mark when done.</p></aside>
+        <div class="meta">
+          <p class="tag">Claude Code plugins and a Zellij-based multi-agent terminal setup.</p>
+          <p class="tech">Rust / WebAssembly / Zellij / Zsh / Docker / Excalidraw / MCP</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/claude-plugins" target="_blank" rel="noopener" aria-label="claude-plugins source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="claude-plugins" aria-label="Details for claude-plugins">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-landgrab" data-slug="landgrab" data-i="11" data-o="landscape" data-focus="0.2222,0.0578,0.7778,0.7778" style="--par:1.6" aria-labelledby="n-landgrab">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">12</p>
+        <h2 class="name" id="n-landgrab"><span class="mask"><span class="rise">landgrab</span></span></h2>
+        <p class="kind">web app · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/landgrab/stage.jpg" alt="landgrab interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/landgrab/highlight.mp4" data-poster="media/landgrab/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call r feat" style="--x:0.433;--y:0.374;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> pin cluster</span></li><li class="call l" style="--x:0.1;--y:0.416;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> filters</span></li><li class="call r" style="--x:0.866;--y:0.287;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> state search</span></li><li class="call r" style="--x:0.7;--y:0.495;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> listing feed</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>pin cluster</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>filters</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>state search</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>listing feed</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Pin clusters to detail</h3><p class="txt">Click numbered clusters to zoom in until they split into hollow, unverified pins; a pin&#39;s detail withholds a county-mismatched ground-truth lookup.</p></aside>
+        <div class="meta">
+          <p class="tag">Map land-opportunity pins next to a research chat</p>
+          <p class="tech">TypeScript / React / Vite / MapLibre GL JS / Express / SQLite / MCP</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="landgrab" aria-label="Details for landgrab">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-renzo" data-slug="renzo" data-i="12" data-o="landscape" data-focus="0,0,1,1" style="--par:1.6" aria-labelledby="n-renzo">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">13</p>
+        <h2 class="name" id="n-renzo"><span class="mask"><span class="rise">Renzo</span></span></h2>
+        <p class="kind">web app · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/renzo/shot-1.jpg" alt="Renzo interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/renzo/highlight.mp4" data-poster="media/renzo/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call r feat" style="--x:0.5;--y:0.445;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> concierge avatar</span></li><li class="call r" style="--x:0.6;--y:0.654;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> greeting</span></li><li class="call l" style="--x:0.48;--y:0.7;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> sign in</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>concierge avatar</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>greeting</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>sign in</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Kiosk concierge, one platform</h3><p class="txt">The kiosk concierge screen is one of several persona surfaces, from management inbox to lobby TV, served by a single platform.</p></aside>
+        <div class="meta">
+          <p class="tag">AI concierge kiosk and operations platform for residential buildings</p>
+          <p class="tech">TypeScript / React / Express / Prisma / PostgreSQL / Python / FastAPI / LiveKit / SwiftUI / Terraform</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="renzo" aria-label="Details for Renzo">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-tapeze" data-slug="tapeze" data-i="13" data-o="landscape" data-focus="0.3294,0.1331,0.6706,0.6709" style="--par:1.6" aria-labelledby="n-tapeze">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">14</p>
+        <h2 class="name" id="n-tapeze"><span class="mask"><span class="rise">Tapeze</span></span></h2>
+        <p class="kind">ios app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/tapeze/stage.jpg" alt="Tapeze interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/tapeze/highlight.mp4" data-poster="media/tapeze/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.625;--y:0.437;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> secondary letters</span></li><li class="call r" style="--x:0.514;--y:0.6;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> common letter</span></li><li class="call r" style="--x:0.835;--y:0.418;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> delete key</span></li><li class="call r" style="--x:0.576;--y:0.768;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> space bar</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>secondary letters</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>common letter</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>delete key</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>space bar</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Swipe-between letters</h3><p class="txt">Tap a key for its common letter; slide toward a neighboring letter for the secondary one. Real keyboard, replayed touch paths.</p></aside>
+        <div class="meta">
+          <p class="tag">A compact 3x3 gesture keyboard for iOS</p>
+          <p class="tech">Swift / SwiftUI / UIInputViewController / Custom keyboard extension</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/tapeze" target="_blank" rel="noopener" aria-label="Tapeze source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="tapeze" aria-label="Details for Tapeze">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-grove" data-slug="grove" data-i="14" data-o="landscape" data-focus="0.3361,0.1111,0.5444,0.5444" style="--par:1.6" aria-labelledby="n-grove">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">15</p>
+        <h2 class="name" id="n-grove"><span class="mask"><span class="rise">grove</span></span></h2>
+        <p class="kind">infra · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/grove/stage.jpg" alt="grove interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/grove/highlight.mp4" data-poster="media/grove/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.1313;--y:0.09;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> job status</span></li><li class="call l feat" style="--x:0.4;--y:0.29;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> live log</span></li><li class="call r" style="--x:0.9325;--y:0.179;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> pause autoscroll</span></li><li class="call l" style="--x:0.3081;--y:0.578;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> status timeline</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>job status</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>live log</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>pause autoscroll</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>status timeline</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Live job log, streamed</h3><p class="txt">Dispatch a job and its log streams into the browser line by line, with follow-scroll that can be paused mid-run.</p></aside>
+        <div class="meta">
+          <p class="tag">Turn spare Apple Silicon Macs into a private build cloud.</p>
+          <p class="tech">Go / React / TypeScript / Tart / Nomad / Tailscale / MCP</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/grove" target="_blank" rel="noopener" aria-label="grove source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="grove" aria-label="Details for grove">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-local-assistant" data-slug="local-assistant" data-i="15" data-o="landscape" data-focus="0.2188,0.23,0.5625,0.5625" style="--par:1.6" aria-labelledby="n-local-assistant">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">16</p>
+        <h2 class="name" id="n-local-assistant"><span class="mask"><span class="rise">assistant</span></span></h2>
+        <p class="kind">ai tooling · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/local-assistant/stage.jpg" alt="assistant interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/local-assistant/highlight.mp4" data-poster="media/local-assistant/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.272;--y:0.142;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> one command</span></li><li class="call l" style="--x:0.3125;--y:0.322;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> micro-vm</span></li><li class="call r" style="--x:0.66;--y:0.375;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> local model</span></li><li class="call l feat" style="--x:0.36;--y:0.568;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> disabled providers</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>one command</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>micro-vm</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>local model</li><li class="feat" style="--i:3"><i class="dot"><b>4</b></i>disabled providers</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Cloud LLMs switched off</h3><p class="txt">Every cloud LLM provider is disabled in config.yml; the micro-VM&#39;s agent talks only to a local model on the host. Animated diagram.</p></aside>
+        <div class="meta">
+          <p class="tag">A private, local personal assistant. One command, no cloud LLM</p>
+          <p class="tech">Shell / Python / Docker / Apple Container / MLX / Microsoft Graph / Dropbox MCP</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="local-assistant" aria-label="Details for assistant">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-blmount" data-slug="blmount" data-i="16" data-o="landscape" data-focus="0.2531,0.222,0.5625,0.5625" style="--par:1.6" aria-labelledby="n-blmount">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">17</p>
+        <h2 class="name" id="n-blmount"><span class="mask"><span class="rise">blmount</span></span></h2>
+        <p class="kind">dev tool · 2026 · closed source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/blmount/stage.jpg" alt="blmount interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/blmount/highlight.mp4" data-poster="media/blmount/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.125;--y:0.49;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> authopen</span></li><li class="call l feat" style="--x:0.3625;--y:0.34;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> sandbox</span></li><li class="call r" style="--x:0.706;--y:0.49;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> fuse-t</span></li><li class="call r" style="--x:0.919;--y:0.65;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> read-only mount</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>authopen</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>sandbox</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>fuse-t</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>read-only mount</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Sandboxed decryption</h3><p class="txt">Dislocker decrypts inside a Seatbelt sandbox that denies all network except loopback; the password arrives by private pipe. Animated diagram.</p></aside>
+        <div class="meta">
+          <p class="tag">Mount BitLocker USB drives on macOS. No kext, no sudo.</p>
+          <p class="tech">Swift / ArgumentParser / FUSE-T / dislocker / sandbox-exec</p>
+          <div class="acts"><span class="closed">closed source</span><button type="button" class="btn btn--open" data-open="blmount" aria-label="Details for blmount">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-corto" data-slug="corto" data-i="17" data-o="landscape" data-focus="0.147,0.002,0.706,0.706" style="--par:1.6" aria-labelledby="n-corto">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">18</p>
+        <h2 class="name" id="n-corto"><span class="mask"><span class="rise">Corto</span></span></h2>
+        <p class="kind">creative · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/corto/stage.jpg" alt="Corto interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/corto/highlight.mp4" data-poster="media/corto/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.383;--y:0.47;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> boat marker</span></li><li class="call r" style="--x:0.75;--y:0.152;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> boat readouts</span></li><li class="call r" style="--x:0.765;--y:0.392;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> wind controls</span></li><li class="call l" style="--x:0.198;--y:0.292;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> map tiles</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>boat marker</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>boat readouts</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>wind controls</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>map tiles</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Boat physics on a live map</h3><p class="txt">A Flask and Leaflet simulator turns rudder, sail trim, wind and current into boat motion; a script steers it round demo marks.</p></aside>
+        <div class="meta">
+          <p class="tag">As if Corto Maltese sailed your RC boat, in software</p>
+          <p class="tech">Python / Raspberry Pi / LoRa / Flask / Leaflet</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/corto" target="_blank" rel="noopener" aria-label="Corto source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="corto" aria-label="Details for Corto">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-mockify" data-slug="mockify" data-i="18" data-o="landscape" data-focus="0.015,0.182,0.48,0.48" style="--par:1.6" aria-labelledby="n-mockify">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">19</p>
+        <h2 class="name" id="n-mockify"><span class="mask"><span class="rise">mockify</span></span></h2>
+        <p class="kind">dev tool · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/mockify/poster.jpg" alt="mockify interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/mockify/highlight.mp4" data-poster="media/mockify/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.19;--y:0.363;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> tool calls</span></li><li class="call l" style="--x:0.4625;--y:0.235;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> request counter</span></li><li class="call l" style="--x:0.4;--y:0.5;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> browser view</span></li><li class="call r" style="--x:0.7375;--y:0.298;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> capture list</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>tool calls</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>request counter</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>browser view</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>capture list</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Agent-driven traffic capture</h3><p class="txt">An agent drives a headless browser step by step while mockify logs every request, producing a capture it can replay.</p></aside>
+        <div class="meta">
+          <p class="tag">Record a live app’s traffic, replay it as a mock</p>
+          <p class="tech">TypeScript / Node.js / Playwright / MCP / Claude Agent SDK</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/mockify" target="_blank" rel="noopener" aria-label="mockify source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="mockify" aria-label="Details for mockify">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-floatplan" data-slug="floatplan" data-i="19" data-o="landscape" data-focus="0.0069,0.1556,0.7014,0.7011" style="--par:1.6" aria-labelledby="n-floatplan">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">20</p>
+        <h2 class="name" id="n-floatplan"><span class="mask"><span class="rise">Pier 25 Float Plan</span></span></h2>
+        <p class="kind">web app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/floatplan/stage.jpg" alt="Pier 25 Float Plan interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/floatplan/highlight.mp4" data-poster="media/floatplan/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l feat" style="--x:0.1875;--y:0.615;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> tack wake</span></li><li class="call l" style="--x:0.159;--y:0.483;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> no-sail sector</span></li><li class="call r" style="--x:0.455;--y:0.505;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> tack count</span></li><li class="call r" style="--x:0.875;--y:0.308;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> time slider</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="feat" style="--i:0"><i class="dot"><b>1</b></i>tack wake</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>no-sail sector</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>tack count</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>time slider</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Tacking sail simulator</h3><p class="txt">Beating upriver, the simulator tacks around the no-sail wedge, adjusting for tidal current, and counts every tack as it goes.</p></aside>
+        <div class="meta">
+          <p class="tag">Go/no-go sailing dashboard for New York Harbor</p>
+          <p class="tech">JavaScript / HTML / CSS / Leaflet / NOAA CO-OPS API / NWS API / Open-Meteo / Terraform</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/floatplan" target="_blank" rel="noopener" aria-label="Pier 25 Float Plan source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><a class="btn" href="https://gm2211.github.io/floatplan/" target="_blank" rel="noopener" aria-label="Pier 25 Float Plan live site (opens in a new tab)">live <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="floatplan" aria-label="Details for Pier 25 Float Plan">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-kube-dash" data-slug="kube-dash" data-i="20" data-o="landscape" data-focus="0.1325,0.108,0.71,0.71" style="--par:1.6" aria-labelledby="n-kube-dash">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">21</p>
+        <h2 class="name" id="n-kube-dash"><span class="mask"><span class="rise">kube-dash</span></span></h2>
+        <p class="kind">dev tool · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/kube-dash/stage.jpg" alt="kube-dash interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/kube-dash/highlight.mp4" data-poster="media/kube-dash/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.466;--y:0.655;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> crashloop pod</span></li><li class="call r feat" style="--x:0.8;--y:0.328;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> logs button</span></li><li class="call l" style="--x:0.403;--y:0.182;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> quick filters</span></li><li class="call r" style="--x:0.884;--y:0.773;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> container state</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>crashloop pod</li><li class="feat" style="--i:1"><i class="dot"><b>2</b></i>logs button</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>quick filters</li><li class="" style="--i:3"><i class="dot"><b>4</b></i>container state</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Streaming logs on a crashing pod</h3><p class="txt">One click on a crash-looping pod opens a live kubectl log stream, showing each failure, backoff and restart as it happens.</p></aside>
+        <div class="meta">
+          <p class="tag">Local Kubernetes dashboard that wraps your own kubectl.</p>
+          <p class="tech">Python / JavaScript / HTML/CSS / kubectl / WebSocket</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/kube-dash" target="_blank" rel="noopener" aria-label="kube-dash source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="kube-dash" aria-label="Details for kube-dash">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-nexrad-mcp" data-slug="nexrad-mcp" data-i="21" data-o="landscape" data-focus="0,0.05,0.825,0.825" style="--par:1.6" aria-labelledby="n-nexrad-mcp">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">22</p>
+        <h2 class="name" id="n-nexrad-mcp"><span class="mask"><span class="rise">nexrad-mcp</span></span></h2>
+        <p class="kind">ai tooling · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/nexrad-mcp/stage.jpg" alt="nexrad-mcp interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/nexrad-mcp/highlight.mp4" data-poster="media/nexrad-mcp/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.352;--y:0.185;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> tool list</span></li><li class="call l" style="--x:0.4;--y:0.391;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> tool call</span></li><li class="call l" style="--x:0.248;--y:0.545;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> cc value</span></li><li class="call l feat" style="--x:0.234;--y:0.725;--i:3"><span class="ln"></span><i class="dot"><b>4</b></i><span class="lbl"><em>04</em> debris flag</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>tool list</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>tool call</li><li class="" style="--i:2"><i class="dot"><b>3</b></i>cc value</li><li class="feat" style="--i:3"><i class="dot"><b>4</b></i>debris flag</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Radar gate flags possible debris</h3><p class="txt">One query_point call returns dual-pol values at the 2013 Moore hook echo, flagging low CC with strong echo as possible debris.</p></aside>
+        <div class="meta">
+          <p class="tag">Raw NEXRAD radar data, exposed to AI clients</p>
+          <p class="tech">Python / MCP / Py-ART / MetPy / AWS S3 (NOAA Open Data) / uv</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/nexrad-mcp" target="_blank" rel="noopener" aria-label="nexrad-mcp source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="nexrad-mcp" aria-label="Details for nexrad-mcp">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+
+  <article class="ch" id="c-lobby-display" data-slug="lobby-display" data-i="22" data-o="landscape" data-focus="0,0.15,0.8,0.8" style="--par:1.6" aria-labelledby="n-lobby-display">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">23</p>
+        <h2 class="name" id="n-lobby-display"><span class="mask"><span class="rise">Lobby Display</span></span></h2>
+        <p class="kind">web app · 2026 · open source</p>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/lobby-display/stage.jpg" alt="Lobby Display interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/lobby-display/highlight.mp4" data-poster="media/lobby-display/highlight.jpg"></video></div></div>
+        <ul class="calls" aria-label="Parts of the interface"><li class="call l" style="--x:0.257;--y:0.234;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> status dots</span></li><li class="call l" style="--x:0.4;--y:0.715;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> event cards</span></li><li class="call r feat" style="--x:0.56;--y:0.935;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> advisory ticker</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" aria-hidden="true"><li class="" style="--i:0"><i class="dot"><b>1</b></i>status dots</li><li class="" style="--i:1"><i class="dot"><b>2</b></i>event cards</li><li class="feat" style="--i:2"><i class="dot"><b>3</b></i>advisory ticker</li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Advisory ticker and status board</h3><p class="txt">Status dots with notes, auto-scrolling event cards and a looping advisory ticker, all published from an admin panel to open screens.</p></aside>
+        <div class="meta">
+          <p class="tag">Digital signage for residential-building lobby screens</p>
+          <p class="tech">TypeScript / React / Vite / Express / Fastify / Prisma / PostgreSQL</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/lobby-display" target="_blank" rel="noopener" aria-label="Lobby Display source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a><button type="button" class="btn btn--open" data-open="lobby-display" aria-label="Details for Lobby Display">details <span aria-hidden="true">+</span></button></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+  </div>
+
+  <section class="idx" id="index" aria-labelledby="idx-h" tabindex="-1">
+    <h2 class="idx__h" id="idx-h">index</h2>
+    <p class="idx__intro">I like turning ideas into working software before they cool off. AI agents do much of the typing now, so I get to build far more, and spend my own time on taste, decisions and finishing touches. Some of it is open source, some isn&#39;t, and all of it runs.</p>
+    <p class="idx__tally">23 projects, 13 open source, 5 live</p>
+    <div class="filters" id="filters">
+      <div class="fchips" role="group" aria-label="Category"><button type="button" class="fchip" data-cat="all" aria-pressed="true">all <span class="n">23</span></button><button type="button" class="fchip" data-cat="web-app" aria-pressed="false">web app <span class="n">9</span></button><button type="button" class="fchip" data-cat="ios-app" aria-pressed="false">ios app <span class="n">1</span></button><button type="button" class="fchip" data-cat="desktop-app" aria-pressed="false">desktop app <span class="n">1</span></button><button type="button" class="fchip" data-cat="dev-tool" aria-pressed="false">dev tool <span class="n">3</span></button><button type="button" class="fchip" data-cat="infra" aria-pressed="false">infra <span class="n">1</span></button><button type="button" class="fchip" data-cat="game" aria-pressed="false">game <span class="n">1</span></button><button type="button" class="fchip" data-cat="creative" aria-pressed="false">creative <span class="n">1</span></button><button type="button" class="fchip" data-cat="ai-tooling" aria-pressed="false">ai tooling <span class="n">6</span></button></div>
+      <label class="switch">
+        <input type="checkbox" id="os-only" role="switch">
+        <span class="switch__track" aria-hidden="true"></span>
+        <span class="switch__label">open source only</span>
+      </label>
+    </div>
+    <table class="spec" id="spec">
+      <caption class="sr-only">All projects</caption>
+      <thead><tr><th scope="col">no.</th><th scope="col">project</th><th scope="col" class="c-ct">category</th><th scope="col" class="c-yr">year</th><th scope="col" class="c-sr">source</th><th scope="col" class="c-lv">live</th></tr></thead>
+      <tbody>
+        <tr class="row" data-slug="trim-lab" data-cat="web-app" data-open="1">
+          <td class="c-no">01</td>
+          <td class="c-nm"><a href="#p=trim-lab">Trim Lab</a><span class="c-tag">Learn sail trim on a Colgate 26, line by line</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><a href="https://gm2211.github.io/trim-lab/" target="_blank" rel="noopener" aria-label="Trim Lab live site (opens in a new tab)">live ↗</a></td>
+        </tr>
+<tr class="row" data-slug="tracked" data-cat="web-app" data-open="0">
+          <td class="c-no">02</td>
+          <td class="c-nm"><a href="#p=tracked">Tracked</a><span class="c-tag">Track-day telemetry analysis in the browser</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><a href="https://tracked.cc" target="_blank" rel="noopener" aria-label="Tracked live site (opens in a new tab)">live ↗</a></td>
+        </tr>
+<tr class="row" data-slug="icbm-game" data-cat="game" data-open="0">
+          <td class="c-no">03</td>
+          <td class="c-nm"><a href="#p=icbm-game">ICBM</a><span class="c-tag">Single-player RTS where trucks haul one resource</span></td>
+          <td class="c-ct">game</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="ecg" data-cat="web-app" data-open="0">
+          <td class="c-no">04</td>
+          <td class="c-nm"><a href="#p=ecg">ECG Studio</a><span class="c-tag">Learn ECG leads by seeing the heart behind them</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="skim" data-cat="desktop-app" data-open="1">
+          <td class="c-no">05</td>
+          <td class="c-nm"><a href="#p=skim">Skim</a><span class="c-tag">RSS reader for the age of AI</span></td>
+          <td class="c-ct">desktop app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><a href="https://gm2211.github.io/skim/" target="_blank" rel="noopener" aria-label="Skim live site (opens in a new tab)">live ↗</a></td>
+        </tr>
+<tr class="row" data-slug="motive" data-cat="web-app" data-open="0">
+          <td class="c-no">06</td>
+          <td class="c-nm"><a href="#p=motive">Motive</a><span class="c-tag">Car-market workspace that ranks listings with a score it explains</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><a href="https://motive-vp3s.onrender.com" target="_blank" rel="noopener" aria-label="Motive live site (opens in a new tab)">live ↗</a></td>
+        </tr>
+<tr class="row" data-slug="argos" data-cat="ai-tooling" data-open="0">
+          <td class="c-no">07</td>
+          <td class="c-nm"><a href="#p=argos">Argos</a><span class="c-tag">Local dispatcher that runs coding agents across many repos.</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="specify" data-cat="ai-tooling" data-open="1">
+          <td class="c-no">08</td>
+          <td class="c-nm"><a href="#p=specify">Specify</a><span class="c-tag">Version-controlled behavior specs that coding agents keep honest</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="byos" data-cat="ai-tooling" data-open="0">
+          <td class="c-no">09</td>
+          <td class="c-nm"><a href="#p=byos">BYOS</a><span class="c-tag">Let apps use people&#39;s own AI subscriptions</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="turbol" data-cat="web-app" data-open="1">
+          <td class="c-no">10</td>
+          <td class="c-nm"><a href="#p=turbol">Turbol</a><span class="c-tag">How bumpy will your flight be? NOAA turbulence data</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="claude-plugins" data-cat="ai-tooling" data-open="1">
+          <td class="c-no">11</td>
+          <td class="c-nm"><a href="#p=claude-plugins">claude-plugins</a><span class="c-tag">Claude Code plugins and a Zellij-based multi-agent terminal setup.</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="landgrab" data-cat="web-app" data-open="0">
+          <td class="c-no">12</td>
+          <td class="c-nm"><a href="#p=landgrab">landgrab</a><span class="c-tag">Map land-opportunity pins next to a research chat</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="renzo" data-cat="web-app" data-open="0">
+          <td class="c-no">13</td>
+          <td class="c-nm"><a href="#p=renzo">Renzo</a><span class="c-tag">AI concierge kiosk and operations platform for residential buildings</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="tapeze" data-cat="ios-app" data-open="1">
+          <td class="c-no">14</td>
+          <td class="c-nm"><a href="#p=tapeze">Tapeze</a><span class="c-tag">A compact 3x3 gesture keyboard for iOS</span></td>
+          <td class="c-ct">ios app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="grove" data-cat="infra" data-open="1">
+          <td class="c-no">15</td>
+          <td class="c-nm"><a href="#p=grove">grove</a><span class="c-tag">Turn spare Apple Silicon Macs into a private build cloud.</span></td>
+          <td class="c-ct">infra</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="local-assistant" data-cat="ai-tooling" data-open="0">
+          <td class="c-no">16</td>
+          <td class="c-nm"><a href="#p=local-assistant">assistant</a><span class="c-tag">A private, local personal assistant. One command, no cloud LLM</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="blmount" data-cat="dev-tool" data-open="0">
+          <td class="c-no">17</td>
+          <td class="c-nm"><a href="#p=blmount">blmount</a><span class="c-tag">Mount BitLocker USB drives on macOS. No kext, no sudo.</span></td>
+          <td class="c-ct">dev tool</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">closed</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="corto" data-cat="creative" data-open="1">
+          <td class="c-no">18</td>
+          <td class="c-nm"><a href="#p=corto">Corto</a><span class="c-tag">As if Corto Maltese sailed your RC boat, in software</span></td>
+          <td class="c-ct">creative</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="mockify" data-cat="dev-tool" data-open="1">
+          <td class="c-no">19</td>
+          <td class="c-nm"><a href="#p=mockify">mockify</a><span class="c-tag">Record a live app’s traffic, replay it as a mock</span></td>
+          <td class="c-ct">dev tool</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="floatplan" data-cat="web-app" data-open="1">
+          <td class="c-no">20</td>
+          <td class="c-nm"><a href="#p=floatplan">Pier 25 Float Plan</a><span class="c-tag">Go/no-go sailing dashboard for New York Harbor</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><a href="https://gm2211.github.io/floatplan/" target="_blank" rel="noopener" aria-label="Pier 25 Float Plan live site (opens in a new tab)">live ↗</a></td>
+        </tr>
+<tr class="row" data-slug="kube-dash" data-cat="dev-tool" data-open="1">
+          <td class="c-no">21</td>
+          <td class="c-nm"><a href="#p=kube-dash">kube-dash</a><span class="c-tag">Local Kubernetes dashboard that wraps your own kubectl.</span></td>
+          <td class="c-ct">dev tool</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="nexrad-mcp" data-cat="ai-tooling" data-open="1">
+          <td class="c-no">22</td>
+          <td class="c-nm"><a href="#p=nexrad-mcp">nexrad-mcp</a><span class="c-tag">Raw NEXRAD radar data, exposed to AI clients</span></td>
+          <td class="c-ct">ai tooling</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="lobby-display" data-cat="web-app" data-open="1">
+          <td class="c-no">23</td>
+          <td class="c-nm"><a href="#p=lobby-display">Lobby Display</a><span class="c-tag">Digital signage for residential-building lobby screens</span></td>
+          <td class="c-ct">web app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="none" id="none" hidden>
+      <p>No projects match those filters.</p>
+      <button type="button" class="btn" id="clear">clear filters</button>
+    </div>
+    <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <p class="foot__name">Giulio Mecocci<i class="cur" aria-hidden="true"></i></p>
+  <nav class="foot__links" aria-label="Elsewhere"><a href="https://github.com/gm2211" target="_blank" rel="noopener">GitHub</a></nav>
+  <p class="foot__note">Some projects are closed source; demos use sample data.</p>
+  <p class="foot__copy">&copy; 2026 Giulio Mecocci &middot; j / k to move between projects</p>
+</footer>
+
+
+<dialog class="modal" id="modal">
+  <button type="button" class="x" data-close aria-label="Close project details">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+  </button>
+  <div class="modal__scroll" id="modal-body"></div>
+</dialog>
+
+<dialog class="lightbox" id="lightbox" aria-label="Screenshot viewer">
+  <figure class="lightbox__fig"><img id="lb-img" alt=""></figure>
+  <button type="button" class="lb-btn lb-close" data-lb="close" aria-label="Close screenshot viewer">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+  </button>
+  <button type="button" class="lb-btn lb-prev" data-lb="prev" aria-label="Previous screenshot">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+  </button>
+  <button type="button" class="lb-btn lb-next" data-lb="next" aria-label="Next screenshot">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+  </button>
+  <p class="lb-count" id="lb-count" aria-live="polite"></p>
+</dialog>
+
+<script type="application/json" id="data">{"cats":{"web-app":"Web apps","ios-app":"iOS apps","desktop-app":"Desktop apps","dev-tool":"Dev tools","infra":"Infrastructure","game":"Games","creative":"Creative","ai-tooling":"AI tooling"},"statuses":{"live":"Live","shipped":"Shipped","in-progress":"In progress"},"projects":[{"slug":"trim-lab","name":"Trim Lab","tagline":"Learn sail trim on a Colgate 26, line by line","description":"An interactive trainer for sail trim on the Colgate 26 sailboat. Every control line has a slider, and an approximate steady-state model (segment aero, a two-element vortex panel method and a heel and leeway force balance) updates boat speed, heel, weather helm and a trim-balance score as you pull. A Babylon.js 3D view runs a position-based cloth simulation for the sails, with wind-dye streamlines drawn from the solved circulation, and the app also has line guides, concept cards and a deck of 66 doctrine-checked drills.","highlights":["Sails fold, flog and luff in the browser: position-based cloth in Babylon.js with a wind-driven boom and jib clew","Per-slider trim indicators and a coordinate-descent 'perfect trim' solver show where each line should sit for the wind","Boat modelled in Blender from photo references; the entire app ships as one self-contained page built by a Python script"],"category":"web-app","tech":["JavaScript","Babylon.js","WebGL","Python","Blender","GitHub Pages"],"visibility":"public","repoUrl":"https://github.com/gm2211/trim-lab","liveUrl":"https://gm2211.github.io/trim-lab/","status":"live","lastActive":"2026-09-12","base":"media/trim-lab/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"tracked","name":"Tracked","tagline":"Track-day telemetry analysis in the browser","description":"Tracked decodes AiM Solo 2 DL .xrk log files with a pure-Python parser (no vendor SDK) and replaces the Race Studio 3 views with a browser app: lap list and replay on a satellite track map, time-distance comparison of up to five laps, corner-by-corner track split, and a notebook for custom charts such as G-G diagrams and brake histograms. The deployed app ships empty: you import .xrk files in the browser, the server decodes them in memory and keeps nothing, and the results live in your browser's IndexedDB unless you sign in to save them to an account.","highlights":["Reverse-engineered .xrk decoder: a strict sequential parser that consumes every byte of the sample logs, documented in docs/FORMAT.md","Corner-aware analysis: auto-detected corners and straights, per-corner brake, entry, exit and throttle-on metrics, and time-found-or-lost between laps","Stateless by default: files are decoded server-side in memory and stored only in the browser unless you sign in"],"category":"web-app","tech":["Python","FastAPI","NumPy","PyArrow","JavaScript","uPlot","Postgres","Docker","Terraform"],"visibility":"private","repoUrl":null,"liveUrl":"https://tracked.cc","status":"live","lastActive":"2026-10-03","base":"media/tracked/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000}]},{"slug":"icbm-game","name":"ICBM","tagline":"Single-player RTS where trucks haul one resource","description":"ICBM is a single-player real-time strategy game set in a grounded, military-industrial 2100, built in Unreal Engine 5.8 for macOS. The whole economy runs on one resource, materiel, which trucks physically haul between depots, factories and construction sites, so supply lines and recovery after a lost battle matter more than micro. The entire HUD is drawn with Canvas primitives rather than Slate/UMG, and it is still a prototype with acceptance testing in progress.","highlights":["One-resource logistics economy with trucks hauling materiel and finite resource deposits","Engineers build the base, factories queue armor, silos launch missiles that defenses can intercept","Custom Canvas-drawn StarCraft-style console HUD (minimap, command card) in Unreal Engine 5.8 C++"],"category":"game","tech":["Unreal Engine 5.8","C++","Blender","macOS"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-10-03","base":"media/icbm-game/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":900},"shots":[{"src":"shot-1.jpg","w":1440,"h":900},{"src":"shot-2.jpg","w":1440,"h":900},{"src":"shot-3.jpg","w":1600,"h":900},{"src":"shot-4.jpg","w":1440,"h":900}]},{"slug":"ecg","name":"ECG Studio","tagline":"Learn ECG leads by seeing the heart behind them","description":"A single-page teaching tool that pairs a 3D anatomical heart and torso with live 12-lead or 6-lead ECG traces. Pick a scenario such as inferior MI, atrial fibrillation or ventricular fibrillation and the infarct territory, electrode placement and per-lead abnormal flags update; double-click any lead for an enlarged strip with a plain-language explanation, or switch to quiz mode and diagnose it yourself. Plain JavaScript and three.js with no build step; the heart and torso models are CC BY 4.0 with in-app credit.","highlights":["Nine scenarios: normal sinus, six MI territories, atrial fibrillation and ventricular fibrillation","Infarct highlighted on a 3D heart, with electrodes attached to a CC BY 4.0 reference torso","Quiz mode: mark abnormal regions on the strips, pick a diagnosis, get scored"],"category":"web-app","tech":["JavaScript","three.js","WebGL","HTML/CSS"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-10-03","base":"media/ecg/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"skim","name":"Skim","tagline":"RSS reader for the age of AI","description":"A desktop (Tauri + React + Rust) and native iOS (SwiftUI) RSS reader that uses an AI model you configure to triage unread articles, cluster them into themes, generate a scoped catch-up digest, and answer questions grounded in your feed with citations. Everything is stored locally in SQLite — no Skim cloud, no telemetry — and models run via Anthropic/OpenAI/Ollama/llama.cpp (desktop) or MLX/Apple Foundation Models (iOS).","highlights":["AI Inbox scores every unread article 1-5 and learns from reading time, stars, chats and overrides","Super-quick catch-up turns a pile of unread articles into ranked takeaways with per-bullet source tags","Ask Skim answers questions across your whole feed with numbered citations, plus an optional web-search fallback"],"category":"desktop-app","tech":["Tauri 2","React","Rust","SQLite","SwiftUI","llama.cpp","MLX"],"visibility":"public","repoUrl":"https://github.com/gm2211/skim","liveUrl":"https://gm2211.github.io/skim/","status":"in-progress","lastActive":"2026-09-30","base":"media/skim/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"motive","name":"Motive","tagline":"Car-market workspace that ranks listings with a score it explains","description":"Motive pulls car listings from many marketplaces into one normalized index, filters them, and ranks every candidate with a fit score built from price, mileage, year, feature coverage and distance, each shown as points with adjustable weights. A shortlist can be compared side by side, and any price can be checked against comparable listings. Rows always link back to the original source and unknown fields stay unknown instead of being guessed; AI research is optional and bring-your-own.","highlights":["Fit score broken down into price, mileage, year, feature and distance points, with sliders to re-weight it","Normalizes listings from marketplace connectors (Cars.com, Cars & Bids, Bring a Trailer, CARFAX, Carvana, AutoTempest and more) over stdio MCP, and never shows a row without a real source URL","Price check against comparable listings plus a side-by-side comparison table for a shortlist"],"category":"web-app","tech":["TypeScript","React","Vite","Express","SQLite","Playwright","MCP"],"visibility":"private","repoUrl":null,"liveUrl":"https://motive-vp3s.onrender.com","status":"live","lastActive":"2026-10-03","base":"media/motive/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"argos","name":"Argos","tagline":"Local dispatcher that runs coding agents across many repos.","description":"Argos watches a set of repos and issue sources, hands each piece of work to a Codex or Claude Code worker in its own git worktree, then runs the repo's own lint, tests, QA, approval gate, merge and deploy commands and records the evidence. A localhost dashboard (and Discord) shows what is running, what is blocked and which decisions need a human, with tap-to-approve gates and spend caps. A Rust core gives each work item one durable lifecycle owner, so the supervising loop never competes with it over merges or deploys.","highlights":["Rust backend with SQLite state; one durable lifecycle per bead from worktree to deploy and close","Dashboard and Discord surface blocked work, approval gates and LLM spend per repo","Dependency-aware ordering; an idle system is designed to spend $0 on LLM calls"],"category":"ai-tooling","tech":["Rust","Python","JavaScript","SQLite","Discord API"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-10-02","base":"media/argos/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"specify","name":"Specify","tagline":"Version-controlled behavior specs that coding agents keep honest","description":"Specify keeps product intent in one small, versioned YAML spec: behaviors with stable IDs, plus the user's exact words attached as source quotes. A CLI lints the spec, projects it into PRODUCT.md and DESIGN.md context for agents, installs agent instructions, and gates changes: if code changed but the spec did not, `spec check` fails until you record a reason. It deliberately does not run tests or track a separate decision ledger.","highlights":["Stable area/behavior IDs and verbatim source quotes keep decisions reviewable as code diffs","`spec check --base \u003cref>` fails when files change without a spec change or a stated reason","Also serves authoring tools over a local stdio MCP server and splits large specs into one file per area"],"category":"ai-tooling","tech":["TypeScript","Node.js","YAML","JSON Schema","MCP"],"visibility":"public","repoUrl":"https://github.com/gm2211/specify","liveUrl":null,"status":"in-progress","lastActive":"2026-10-02","base":"media/specify/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"byos","name":"BYOS","tagline":"Let apps use people's own AI subscriptions","description":"BYOS (bring your own subscription) is a TypeScript kit of reusable, browser-owned AI connections: a person signs in with a provider subscription or pastes an API key, the credential stays in their browser, and the app talks to the provider directly. It ships a credential vault, provider adapters, React sign-in and model-picker components with localizable strings and scoped CSS tokens, and a Rust/WASM TLS engine so Codex traffic can be verified in the browser over a ciphertext-only relay.","highlights":["Six workspace packages: core vault, providers, React UI, browser TLS, Codex adapter, relay server","Credentials stay browser-side; the relay only forwards bounded ciphertext to fixed OpenAI destinations","Vendored into two apps (Motive and Tracked) from pinned commits with scripts/vendor.mjs"],"category":"ai-tooling","tech":["TypeScript","React","Rust","WebAssembly","Vite"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-10-01","base":"media/byos/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1280},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"turbol","name":"Turbol","tagline":"How bumpy will your flight be? NOAA turbulence data","description":"Turbol is a 'how bumpy will my flight be' app for people who hate turbulence. It has a Scala (http4s, doobie) backend, a Vue and Leaflet frontend, and a Python data pipeline that fetches NOAA's GTGN nowcast and GTG v4 forecast, decodes the GRIB2 files and samples turbulence (eddy dissipation rate) along a route in space and time. The web app stalled in 2023 when real-time data needed a licensed feed with a static IP; NOAA has since opened both products on NOMADS, and the pipeline was revived in September 2026 as the first step of porting that data into the backend.","highlights":["Pulls only the GRIB messages it needs from 150 MB forecast files using HTTP range requests: about 59 MB instead of about 1 GB for a seven-hour forecast window","4-D route sampling: each point along the great circle is read from the forecast hour at which the aircraft will be there, then classified light, moderate, severe or extreme","Cross-checks the forecast against the observation-blended nowcast on the same route (correlation 0.79 at FL350)"],"category":"web-app","tech":["Scala","http4s","Vue","Leaflet","Python","GRIB2","Terraform"],"visibility":"public","repoUrl":"https://github.com/gm2211/turbol","liveUrl":null,"status":"in-progress","lastActive":"2026-09-26","base":"media/turbol/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000}]},{"slug":"claude-plugins","name":"claude-plugins","tagline":"Claude Code plugins and a Zellij-based multi-agent terminal setup.","description":"A Claude Code plugin marketplace (a local-Excalidraw diagram skill and a spec-driven TDD build-feature workflow) plus the terminal tooling used to run several agents side by side. The centerpiece is zellij-attention, a Rust/WASM Zellij plugin that marks background tabs as waiting or completed when Claude Code hooks signal it, alongside zsh helpers for git worktrees and a Docker sandbox, and kitty/Neovim configs. An earlier async multi-agent coordinator plugin was removed from the repo in April 2026.","highlights":["zellij-attention: Rust/WASM plugin that flags background tabs from Claude Code hooks","pretty-diagrams: Excalidraw and an MCP server run locally in Docker, with no internet route for the app container","build-feature: eight-phase spec-driven TDD flow with self-review and Codex review"],"category":"ai-tooling","tech":["Rust","WebAssembly","Zellij","Zsh","Docker","Excalidraw","MCP"],"visibility":"public","repoUrl":"https://github.com/gm2211/claude-plugins","liveUrl":null,"status":"shipped","lastActive":"2026-09-24","base":"media/claude-plugins/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":914},{"src":"shot-2.jpg","w":1600,"h":914},{"src":"shot-3.jpg","w":1325,"h":1188}]},{"slug":"landgrab","name":"landgrab","tagline":"Map land-opportunity pins next to a research chat","description":"landgrab is a split-screen app for hunting undervalued US land: an interactive map of opportunity pins on one side, a research conversation on the other. Pins come from county tax-forfeiture auctions and land banks (browsable with no AI at all) or from an AI research pass using a key the user brings themselves. The server never stores an AI credential, and facts a public API can answer exactly (flood zone, Census tract, proximity, elevation) are fetched deterministically rather than left to the model.","highlights":["Browse live county tax-forfeiture auctions and land-bank parcels on a MapLibre map with no AI key","Bring-your-own-AI: OpenRouter, Claude, Grok or Groq, with credentials kept in the browser, never in the server's database","Pins that cannot be located are held back and labeled rather than placed at a guess; unverified pins draw as hollow outlines"],"category":"web-app","tech":["TypeScript","React","Vite","MapLibre GL JS","Express","SQLite","MCP"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-09-24","base":"media/landgrab/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"renzo","name":"Renzo","tagline":"AI concierge kiosk and operations platform for residential buildings","description":"Renzo is a virtual concierge for residential buildings: a lobby kiosk and phone apps where residents talk or type to an AI agent, plus role-specific surfaces for management, board members, maintenance workers and lobby screens. A Python FastAPI and LiveKit agent handles chat and voice and reaches building data through MCP tools, while one Express and Prisma platform serves every web persona by hostname. Native SwiftUI iOS clients and Terraform-managed Kubernetes infrastructure round it out.","highlights":["Voice and chat agent on a LiveKit worker plus FastAPI, calling platform tools over MCP","One Express and Prisma platform serves nine host-routed personas, from kiosk and lobby TV to board and admin","Spec-first workflow: every change is verified against renzo.spec.yaml, with SwiftUI resident and voice apps alongside"],"category":"web-app","tech":["TypeScript","React","Express","Prisma","PostgreSQL","Python","FastAPI","LiveKit","SwiftUI","Terraform"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-09-24","base":"media/renzo/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":546,"h":1182},{"src":"shot-4.jpg","w":1600,"h":1030}]},{"slug":"tapeze","name":"Tapeze","tagline":"A compact 3x3 gesture keyboard for iOS","description":"A custom iOS keyboard extension that fits every letter, number, and symbol onto a 3x3 grid. Tap a key for its common letter; swipe between keys for the secondary letter shown between them; swipe-and-back or a circular loop types the uppercase version. Long swipes handle space and delete, so the whole alphabet works without a dedicated row for either.","highlights":["Gesture grammar: tap, swipe-between, swipe-and-back for caps, and loop-to-capitalize, all on one 3x3 grid","Long horizontal swipe = space, long vertical swipe = delete — no dedicated keys for either","Three built-in themes plus adjustable edge softness and an optional live gesture trail"],"category":"ios-app","tech":["Swift","SwiftUI","UIInputViewController","Custom keyboard extension"],"visibility":"public","repoUrl":"https://github.com/gm2211/tapeze","liveUrl":null,"status":"in-progress","lastActive":"2026-09-24","base":"media/tapeze/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":554,"h":1200},{"src":"shot-2.jpg","w":554,"h":1200},{"src":"shot-3.jpg","w":552,"h":1200},{"src":"shot-4.jpg","w":552,"h":1200}]},{"slug":"grove","name":"grove","tagline":"Turn spare Apple Silicon Macs into a private build cloud.","description":"grove runs CI builds, deploys and coding-agent sessions on Macs you already own, inside Tart VMs that are scheduled by Nomad and reachable only over your Tailscale tailnet. Each VM runs a Nomad client that packs many jobs inside it, which gets around Apple's two-VMs-per-Mac limit, while Orchard handles VM lifecycle. A Go control plane serves an HTTP API, a CLI, an embedded React UI and an MCP server, so Claude Code or Codex can dispatch jobs and follow their logs.","highlights":["Nomad inside Tart VMs: many jobs per Mac despite the two-VM limit","MCP server lets Claude Code or Codex dispatch builds and stream job logs","Join flow with approval codes and per-device, revocable credentials"],"category":"infra","tech":["Go","React","TypeScript","Tart","Nomad","Tailscale","MCP"],"visibility":"public","repoUrl":"https://github.com/gm2211/grove","liveUrl":null,"status":"in-progress","lastActive":"2026-09-23","base":"media/grove/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1324}]},{"slug":"local-assistant","name":"assistant","tagline":"A private, local personal assistant. One command, no cloud LLM","description":"A single `assistant` command that runs an open-source agent harness (omp) inside an Apple Container micro-VM against a local model (DeepSeek V4 Flash via ds4-server) — every cloud LLM provider is disabled in config. It connects to Outlook (read + draft, never send) and Dropbox through plugin-style OAuth, keeps sessions and tokens in an AES-256 vault that unmounts on exit, and prompts before every write or exec tool call.","highlights":["Agent harness runs in an Apple Container micro-VM: non-root, read-only rootfs, all capabilities dropped","Outlook scope is User.Read Mail.ReadWrite only — drafts replies, can never send mail","AES-256 vault holds sessions/tokens/logs as ciphertext whenever the assistant isn't running"],"category":"ai-tooling","tech":["Shell","Python","Docker","Apple Container","MLX","Microsoft Graph","Dropbox MCP"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-09-13","base":"media/local-assistant/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1132},"shots":[{"src":"shot-1.jpg","w":1600,"h":950},{"src":"shot-2.jpg","w":1600,"h":1012}]},{"slug":"blmount","name":"blmount","tagline":"Mount BitLocker USB drives on macOS. No kext, no sudo.","description":"A Swift CLI that unlocks BitLocker-encrypted USB drives on macOS entirely in user space. It opens the raw device through the standard authopen admin dialog (no sudo), decrypts it with a patched, sandboxed build of dislocker that cannot reach the network, and mounts the resulting NTFS image read-only with macOS's own driver via FUSE-T — no kernel extension, no Recovery Mode, no reboot.","highlights":["Password goes to dislocker over a private pipe — never argv, never disk, invisible to ps","Decryption runs under a Seatbelt sandbox with (deny network*), verified with a curl test","Patched upstream dislocker 0.7.3 built from a pinned, checksummed tarball, no macFUSE kext"],"category":"dev-tool","tech":["Swift","ArgumentParser","FUSE-T","dislocker","sandbox-exec"],"visibility":"private","repoUrl":null,"liveUrl":null,"status":"in-progress","lastActive":"2026-09-11","base":"media/blmount/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1141},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000}]},{"slug":"corto","name":"Corto","tagline":"As if Corto Maltese sailed your RC boat, in software","description":"Python control software for a radio-controlled sailboat. A handheld Raspberry Pi remote sends short ASCII commands over 915 MHz LoRa to a boat-side Pi that drives the sail and rudder servos and a motor, and a navigator turns bearing-to-waypoint and wind angle into rudder and sail-trim settings. GPS and wind-vane drivers are still stubs on the default branch, so manual radio control is what works end to end; a separate branch adds a Flask and Leaflet simulator for exercising the boat logic without hardware.","highlights":["LoRa link (Adafruit RFM9x, 915 MHz) with a five-command ASCII protocol: sail, rudder, throttle, destination, telemetry","Navigator maps wind angle (clamped to 45-135 degrees) to sail trim and heading error to rudder","gm/simulator branch: Flask + Leaflet simulator with wind and current, runnable without a boat"],"category":"creative","tech":["Python","Raspberry Pi","LoRa","Flask","Leaflet"],"visibility":"public","repoUrl":"https://github.com/gm2211/corto","liveUrl":null,"status":"in-progress","lastActive":"2026-09-09","base":"media/corto/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1126},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"mockify","name":"mockify","tagline":"Record a live app’s traffic, replay it as a mock","description":"mockify records the HTTP traffic of a live web app, either by letting an agent drive a headless browser through it or by browsing by hand, and replays it as a local mock server with no backend. Replay goes beyond the literal capture: it can answer requests it never saw, using inferred endpoint templates or an LLM-written implementation that is graded on held-out traffic and keeps state across POST and GET.","highlights":["Demo capture: 152 requests and 39 screenshots from one agent-driven session","Replay tiers: inferred implementation, then recorded traffic, then shape-synthesized responses","Also exports OpenAPI 3.1, diffs a capture against a live target, and redacts credentials at write time"],"category":"dev-tool","tech":["TypeScript","Node.js","Playwright","MCP","Claude Agent SDK"],"visibility":"public","repoUrl":"https://github.com/gm2211/mockify","liveUrl":null,"status":"in-progress","lastActive":"2026-08-27","base":"media/mockify/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1000,"h":826},{"src":"shot-2.jpg","w":980,"h":640},{"src":"shot-3.jpg","w":1600,"h":260},{"src":"shot-4.jpg","w":1000,"h":826}]},{"slug":"floatplan","name":"Pier 25 Float Plan","tagline":"Go/no-go sailing dashboard for New York Harbor","description":"A single-file web app that pulls NWS forecasts and marine advisories, NOAA tidal currents, measured wind from nearby stations and NEXRAD radar, then turns them into a GO / CAUTION / NO-GO verdict for a chosen departure time on the Hudson. It suggests which way to head first against the current, runs a sail simulator of the route, and generates a ready-to-file float plan with a compact plan code. Planning support only, not a navigation tool.","highlights":["One vanilla-JS HTML file with no build step; every data card links to its source","Verdict from editable wind and gust limits, current and advisories; missing data never turns into a green light","Forecast-model comparison (NWS, GFS, ECMWF, ICON) overlaid on measured wind from nearby stations"],"category":"web-app","tech":["JavaScript","HTML","CSS","Leaflet","NOAA CO-OPS API","NWS API","Open-Meteo","Terraform"],"visibility":"public","repoUrl":"https://github.com/gm2211/floatplan","liveUrl":"https://gm2211.github.io/floatplan/","status":"live","lastActive":"2026-08-09","base":"media/floatplan/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000}]},{"slug":"kube-dash","name":"kube-dash","tagline":"Local Kubernetes dashboard that wraps your own kubectl.","description":"kube-dash (`kd`) serves a browser UI on localhost and reads cluster resources through the kubectl and kubeconfig you already have, so there is nothing to install in the cluster. It has pages for the common workload types plus an All Cluster Objects view that pages through every listable API type, including CRDs, and it keeps load bounded on big clusters with 50 to 100 object pages and server-side selectors. Pods get streaming logs, a shell, describe and YAML edit.","highlights":["No in-cluster install: a Python helper shells out to your local kubectl","Bounded paging and server-side filters for clusters with tens of thousands of objects","Dependency-free front end with live pod logs and shell over WebSockets"],"category":"dev-tool","tech":["Python","JavaScript","HTML/CSS","kubectl","WebSocket"],"visibility":"public","repoUrl":"https://github.com/gm2211/kube-dash","liveUrl":null,"status":"shipped","lastActive":"2026-07-11","base":"media/kube-dash/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":1000},{"src":"shot-3.jpg","w":1600,"h":1000},{"src":"shot-4.jpg","w":1600,"h":1000}]},{"slug":"nexrad-mcp","name":"nexrad-mcp","tagline":"Raw NEXRAD radar data, exposed to AI clients","description":"An MCP server that decodes NOAA's public NEXRAD Level II archive and lets an AI client query dual-pol radar moments (reflectivity, velocity, correlation coefficient, ZDR) at any point, tilt and archived time, alongside Level 3 products, NWS warnings and GOES lightning. It returns decoded numbers rather than pre-rendered radar images, so a model can weigh reflectivity, velocity and CC together, for example flagging a low-CC debris signature the way a forecaster would in RadarScope.","highlights":["13 MCP tools over Level II and Level 3 radar, NWS warnings and forecasts, and GOES GLM lightning","Decodes raw volumes with Py-ART and MetPy from public AWS buckets; no API keys","One-line uvx install; stdio by default, optional streamable-HTTP transport"],"category":"ai-tooling","tech":["Python","MCP","Py-ART","MetPy","AWS S3 (NOAA Open Data)","uv"],"visibility":"public","repoUrl":"https://github.com/gm2211/nexrad-mcp","liveUrl":null,"status":"shipped","lastActive":"2026-07-06","base":"media/nexrad-mcp/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":1000},"shots":[{"src":"shot-1.jpg","w":1600,"h":1000},{"src":"shot-2.jpg","w":1600,"h":640},{"src":"shot-3.jpg","w":1600,"h":800},{"src":"shot-4.jpg","w":1280,"h":720}]},{"slug":"lobby-display","name":"Lobby Display","tagline":"Digital signage for residential-building lobby screens","description":"A signage dashboard for apartment-building lobbies: a service-status board, auto-scrolling event cards and a ticker of advisories, all driven from an admin panel. Staff edit a draft and publish it, with snapshot history and VIEWER / EDITOR / ADMIN roles, and open screens pick up changes live over server-sent events. It seeds itself with demo data on first start and deploys to Render from a blueprint.","highlights":["Draft, publish and snapshot-history workflow for lobby content","Live updates to open screens over server-sent events","Three roles (viewer, editor, admin) with CSRF protection and a Prisma session store"],"category":"web-app","tech":["TypeScript","React","Vite","Express","Fastify","Prisma","PostgreSQL"],"visibility":"public","repoUrl":"https://github.com/gm2211/lobby-display","liveUrl":null,"status":"shipped","lastActive":"2026-05-01","base":"media/lobby-display/","video":"demo.mp4","poster":"poster.jpg","posterSize":{"w":1600,"h":900},"shots":[{"src":"shot-1.jpg","w":1600,"h":900},{"src":"shot-2.jpg","w":1440,"h":900},{"src":"shot-3.jpg","w":1440,"h":900},{"src":"shot-4.jpg","w":1600,"h":900}]}]}</script>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const root = document.documentElement;
+  const data = JSON.parse($('#data').textContent);
+  const byId = new Map(data.projects.map((p) => [p.slug, p]));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const pad = (n) => String(n).padStart(2, '0');
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const isStatic = root.classList.contains('static'); // reduced motion (or no JS): no pinning, no zoom
+  const baseTitle = document.title;
+  reduce.addEventListener('change', () => location.reload());
+
+  /* ---------------------------------------------------------------- theme */
+  const themeBtn = $('#theme');
+  const isDark = () => root.dataset.theme === 'dark';
+  const syncTheme = () => themeBtn.setAttribute('aria-label', isDark() ? 'Switch to light theme' : 'Switch to dark theme');
+  themeBtn.addEventListener('click', () => {
+    const next = isDark() ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch (e) { /* storage blocked: the choice just won't persist */ }
+    syncTheme();
+  });
+  syncTheme();
+
+  /* ---------------------------------------------------- intro: type the line */
+  // One blink of the GIF's 0.53 s cursor, then the line types character by
+  // character like a person at a keyboard (~55 ms a key, a beat between words),
+  // with the cursor solid while typing and blinking once done.
+  const hdr = $('#hdr');
+  const wm = $('#wm');
+  const cur = $('.cur', wm);
+  const hint = $('.hint');
+  const wmt = $('.wm__t', wm);
+  wmt.innerHTML = [...wmt.textContent].map((c) => `<span class="w">${esc(c)}</span>`).join('');
+  const chars = $$('.w', wm);
+  (function type() {
+    if (isStatic) return;
+    const done = () => { cur.classList.remove('off'); cur.classList.add('blink'); chars.forEach((w) => w.classList.add('on')); setTimeout(() => hint.classList.add('ready'), 250); };
+    if (scrollY > 40) return done();
+    setTimeout(() => cur.classList.add('off'), 265);
+    let t = 530;
+    chars.forEach((w, i) => {
+      t += i === 0 ? 0 : (w.textContent === ' ' ? 110 : 42 + ((i * 37) % 28)); // deterministic jitter, longer beat on spaces
+      setTimeout(() => { cur.classList.remove('off'); w.classList.add('on'); }, t);
+    });
+    setTimeout(done, t + 120);
+  })();
+
+  /* ------------------------------------------------------- scroll engine */
+  // One rAF loop. It reads every geometry first, then writes custom properties
+  // (--ip on the header/intro, --p and --q on near chapters); CSS does the rest.
+  const chs = $$('.ch');
+  const intro = $('#top');
+  const bar = $('#bar');
+  const hch = $('#hdr-ch');
+  const DOCK = 13;
+  const N = chs.length;
+  let vh = innerHeight, sh = vh, tops = [], hts = [], idxTop = 0, introRange = 1, docRange = 1;
+  let act = -2, lastIp = -1, lastGp = -1, ticks = [], queued = false;
+  let sy = scrollY, lastT = 0; // eased scroll position (see frame)
+  const playing = [];
+
+  function layoutZoom(ch) {
+    const f = ch.dataset.focus;
+    const set = (k, v) => (v == null ? ch.style.removeProperty(k) : ch.style.setProperty(k, v));
+    if (!f) { ['--zs', '--zx', '--zy', '--cw', '--chh'].forEach((k) => set(k, null)); return; }
+    const [fx, fy, fw, fh] = f.split(',').map(Number);
+    const fr = $('.frame', ch), pl = $('.plate', ch);
+    const W = fr.offsetWidth, H = fr.offsetHeight, PW = pl.offsetWidth, PH = pl.offsetHeight;
+    if (!W || !PW) return;
+    const portrait = ch.dataset.o === 'portrait';
+    const ox = (W - PW) / 2, oy = (H - PH) / 2, bw = fw * PW, bh = fh * PH;
+    const s = portrait ? Math.min((H * 0.92) / bh, (W * 0.92) / bw) : Math.min(W / bw, H / bh); // contain: the focus rect is always fully visible
+    let cx = ox + (fx + fw / 2) * PW, cy = oy + (fy + fh / 2) * PH;
+    if (!portrait) { // keep the view inside the image when the focus rect is not 16:10
+      const vw = W / s, vh2 = H / s;
+      cx = vw <= PW ? clamp(cx, ox + vw / 2, ox + PW - vw / 2) : ox + PW / 2;
+      cy = vh2 <= PH ? clamp(cy, oy + vh2 / 2, oy + PH - vh2 / 2) : oy + PH / 2;
+    }
+    set('--zs', s.toFixed(4));
+    set('--zx', (W / 2 - s * cx).toFixed(2) + 'px');
+    set('--zy', (H / 2 - s * cy).toFixed(2) + 'px');
+    if (portrait) { set('--cw', (bw * s).toFixed(1) + 'px'); set('--chh', (bh * s).toFixed(1) + 'px'); } // phone-shaped clip sits exactly on the zoomed focus rect
+  }
+
+  function measure() {
+    vh = innerHeight;
+    const y = scrollY;
+    sy = y; // no glide after a resize or a restored scroll position
+    sh = chs[0] ? $('.stage', chs[0]).offsetHeight : vh;
+    chs.forEach((c, i) => { const r = c.getBoundingClientRect(); tops[i] = r.top + y; hts[i] = r.height; });
+    introRange = Math.max(1, intro.offsetHeight - sh);
+    idxTop = $('#index').getBoundingClientRect().top + y;
+    docRange = Math.max(1, root.scrollHeight - vh);
+    if (!isStatic) {
+      const big = parseFloat(getComputedStyle(wm).fontSize);
+      const k = DOCK / big, h = wm.offsetHeight;
+      hdr.style.setProperty('--k', k.toFixed(4));
+      hdr.style.setProperty('--wmh', h + 'px');
+      hdr.style.setProperty('--gy', ((hdr.offsetHeight - k * h) / 2).toFixed(2) + 'px');
+      chs.forEach(layoutZoom);
+    }
+    bar.querySelectorAll('.tk').forEach((t) => t.remove());
+    ticks = tops.map((t) => { const e = document.createElement('i'); e.className = 'tk'; e.style.left = clamp(t / docRange, 0, 1) * 100 + '%'; bar.append(e); return e; });
+    act = -2; lastIp = lastGp = -1;
+    schedule();
+  }
+
+  const vidOf = (ch) => ch._v || (ch._v = $('video', ch));
+  function pauseV(v) { const k = playing.indexOf(v); if (k > -1) playing.splice(k, 1); v.pause(); }
+  function playV(v) {
+    if (playing.includes(v)) return;
+    while (playing.length >= 2) pauseV(playing[0]); // never more than two videos decoding
+    playing.push(v);
+    v.play().catch(() => {});
+  }
+  function wakeV(ch, on) {
+    const v = vidOf(ch);
+    if (!v) return;
+    if (on && !v.getAttribute('src')) {
+      v.poster = v.dataset.poster;
+      v.src = v.dataset.src;
+      if (isStatic) v.controls = true;
+    } else if (!on && v.getAttribute('src')) {
+      pauseV(v); v.removeAttribute('src'); v.removeAttribute('poster'); v.load();
+    }
+  }
+  const saveData = () => !!(navigator.connection && navigator.connection.saveData);
+
+  function setActive(i) {
+    if (i === act) return;
+    act = i;
+    const p = i >= 0 && i < N ? byId.get(chs[i].dataset.slug) : null;
+    hch.innerHTML = p ? `<b>${pad(i + 1)}</b> / ${pad(N)} — ${esc(p.name)}` : '';
+    $('#to-index').classList.toggle('on', i === N);
+    ticks.forEach((t, k) => t.classList.toggle('on', k === i));
+  }
+
+  // Animations follow an eased copy of the scroll position (sy), so a mouse
+  // wheel's 100px notches glide instead of jumping. Pinning and layout still use
+  // the real scrollY; only the progress values that drive transforms are eased.
+  const TAU = 90; // ms; time constant of the easing
+
+  function frame(now) {
+    queued = false;
+    const ry = scrollY;
+    const dt = lastT ? Math.min(64, now - lastT) : 16;
+    lastT = now;
+    sy += (ry - sy) * (1 - Math.exp(-dt / TAU));
+    if (Math.abs(ry - sy) < 0.5) sy = ry;
+    else schedule(); // keep gliding until we catch up
+    const y = sy, lag = ry - sy; // lag > 0: real scroll is ahead of the eased one
+    // reads
+    const mid = y + vh * 0.5;
+    let a = -1;
+    for (let i = 0; i < N; i++) if (tops[i] <= mid) a = i;
+    if (mid >= idxTop) a = N;
+    const work = [];
+    for (let i = 0; i < N; i++) {
+      const d = tops[i] - y;
+      if (d > vh * 3 || d + hts[i] < -vh * 2) { wakeV(chs[i], false); continue; } // far: release the decoder
+      const win = d < vh * 1.5 && d + hts[i] > -vh * 0.5;
+      const r = win ? chs[i].getBoundingClientRect() : null;
+      work.push([i, d < vh * 2 && d + hts[i] > -vh, r]);
+    }
+    // writes
+    const ip = clamp(y / introRange, 0, 1);
+    if (!isStatic && ip !== lastIp) {
+      lastIp = ip;
+      const v = ip.toFixed(4);
+      hdr.style.setProperty('--ip', v);
+      intro.style.setProperty('--ip', v);
+      hdr.classList.toggle('on', ip > 0.74);
+    }
+    const gp = clamp(y / docRange, 0, 1);
+    if (gp !== lastGp) { lastGp = gp; hdr.style.setProperty('--gp', gp.toFixed(4)); }
+    setActive(a);
+    const lock = $('#modal').open || saveData();
+    for (const [i, near, r] of work) {
+      const ch = chs[i];
+      wakeV(ch, near);
+      if (!r) continue;
+      const range = Math.max(1, r.height - sh);
+      const et = r.top + lag; // eased top
+      const p = clamp(-et / range, 0, 1);
+      if (!isStatic) {
+        const pv = Math.round(p * 10000) / 10000;
+        if (pv !== ch._p) {
+          ch._p = pv;
+          ch.style.setProperty('--p', pv);
+          ch.classList.toggle('end', pv >= 0.84);
+        }
+        const qv = Math.round(clamp(1 - et / sh, 0, 1) * 1000) / 1000;
+        if (qv !== ch._q) { ch._q = qv; ch.style.setProperty('--q', qv); }
+      }
+      const v = vidOf(ch);
+      if (v && !isStatic) { if (p >= 0.45 && r.bottom > 0 && r.top < vh && !lock) playV(v); else pauseV(v); } // decode only while on screen
+    }
+  }
+  function schedule() { if (!queued) { queued = true; requestAnimationFrame(frame); } }
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', () => { requestAnimationFrame(measure); }, { passive: true });
+  addEventListener('load', measure);
+  if (document.fonts) document.fonts.ready.then(measure);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) [...playing].forEach(pauseV); else schedule(); });
+  measure();
+
+  /* -------------------------------------------------------------- navigate */
+  const landing = (i) => tops[i] + 0.16 * Math.max(0, hts[i] - sh); // title settled, frame arriving
+  const toY = (top) => scrollTo({ top, behavior: isStatic ? 'auto' : 'smooth' });
+  function go(dir) {
+    const t = [0, ...chs.map((_, i) => landing(i)), idxTop];
+    const y = scrollY;
+    const to = dir > 0 ? t.find((v) => v > y + 4) : [...t].reverse().find((v) => v < y - 4);
+    if (to != null) toY(to);
+  }
+  addEventListener('keydown', (e) => {
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || $('#modal').open || $('#lightbox').open) return;
+    const t = e.target;
+    if (t.matches && t.matches('textarea, select, [contenteditable], input:not([type=checkbox])')) return;
+    const inStory = scrollY + vh * 0.5 < idxTop;
+    const k = e.key;
+    if (k === 'j' || (k === 'PageDown' && inStory)) go(1);
+    else if (k === 'k' || (k === 'PageUp' && inStory)) go(-1);
+    else return;
+    e.preventDefault();
+  });
+  const jump = (sel, top) => $(sel).addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    toY(top());
+    if (sel !== '#wm') setTimeout(() => $('#index').focus({ preventScroll: true }), 600);
+  });
+  jump('#to-index', () => idxTop);
+  jump('.skip', () => idxTop);
+  jump('#wm', () => 0);
+
+  /* ---------------------------------------------------------------- index */
+  const spec = $('#spec');
+  const rows = $$('.row', spec);
+  const chips = $$('.fchip');
+  const osOnly = $('#os-only');
+  const none = $('#none');
+  const statusEl = $('#status');
+  const state = { cat: 'all', os: false };
+  function applyFilters() {
+    let shown = 0;
+    const ok = (r, cat) => (cat === 'all' || r.dataset.cat === cat) && (!state.os || r.dataset.open === '1');
+    rows.forEach((r) => { const m = ok(r, state.cat); r.hidden = !m; if (m) shown++; });
+    chips.forEach((b) => {
+      const cat = b.dataset.cat;
+      b.querySelector('.n').textContent = rows.filter((r) => ok(r, cat)).length;
+      b.setAttribute('aria-pressed', String(cat === state.cat));
+      b.disabled = cat !== state.cat && !rows.some((r) => ok(r, cat));
+    });
+    none.hidden = shown > 0;
+    spec.hidden = shown === 0;
+    statusEl.textContent = `${shown} ${shown === 1 ? 'project' : 'projects'} shown`;
+    requestAnimationFrame(measure); // the document got shorter or taller
+  }
+  $('#filters').addEventListener('click', (e) => {
+    const b = e.target.closest('.fchip');
+    if (b && b.dataset.cat !== state.cat) { state.cat = b.dataset.cat; applyFilters(); }
+  });
+  osOnly.addEventListener('change', () => { state.os = osOnly.checked; applyFilters(); });
+  $('#clear').addEventListener('click', () => { osOnly.checked = false; state.cat = 'all'; state.os = false; applyFilters(); });
+
+  /* ---------------------------------------------------------- detail modal */
+  const modal = $('#modal');
+  const body = $('#modal-body');
+  const hashSlug = () => ((location.hash.match(/^#p=([\w-]+)/) || [])[1]) || '';
+  let pushed = false;
+  let opener = null;
+  const fmtDate = (d) => { const t = new Date(d + 'T12:00:00'); return isNaN(t) ? '' : t.toLocaleDateString('en', { month: 'long', year: 'numeric' }); };
+  const openHash = (slug, from) => { pushed = true; opener = from; location.hash = '#p=' + slug; };
+
+  $('#story').addEventListener('click', (e) => { const b = e.target.closest('[data-open]'); if (b) openHash(b.dataset.open, b); });
+  spec.addEventListener('click', (e) => {
+    const row = e.target.closest('.row');
+    if (!row || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    const link = e.target.closest('a');
+    if (link && !link.closest('.c-nm')) return; // the live link is a real link
+    e.preventDefault();
+    openHash(row.dataset.slug, $('.c-nm a', row));
+  });
+
+  function render(p) {
+    const stage = p.video
+      ? `<video src="${esc(p.base + p.video)}" ${p.poster ? `poster="${esc(p.base + p.poster)}"` : ''} muted loop playsinline controls preload="metadata" ${reduce.matches ? '' : 'autoplay'}></video>`
+      : p.poster ? `<img src="${esc(p.base + p.poster)}" alt="${esc(p.name)} screenshot" width="${p.posterSize ? p.posterSize.w : 1600}" height="${p.posterSize ? p.posterSize.h : 1000}">` : '';
+    const thumbs = (p.shots || []).map((s, i) =>
+      `<button type="button" class="thumb" data-i="${i}" aria-label="Open screenshot ${i + 1} of ${p.shots.length}"><img src="${esc(p.base + s.src)}" alt="" width="${s.w}" height="${s.h}" loading="lazy" decoding="async"></button>`).join('');
+    const open = p.visibility === 'public';
+    const links = [
+      p.liveUrl && `<a class="btn" href="${esc(p.liveUrl)}" target="_blank" rel="noopener">live <span aria-hidden="true">↗</span></a>`,
+      open && p.repoUrl && `<a class="btn" href="${esc(p.repoUrl)}" target="_blank" rel="noopener">source <span aria-hidden="true">↗</span></a>`,
+      !open && '<span class="closed">closed source</span>',
+    ].filter(Boolean).join('');
+    body.innerHTML = `
+      <div class="pd">
+        <div class="pd__media">
+          ${stage ? `<div class="pd__stage">${stage}</div>` : ''}
+          ${thumbs ? `<div class="pd__thumbs">${thumbs}</div>` : ''}
+        </div>
+        <div class="pd__info">
+          <h2 class="pd__title" id="pd-title">${esc(p.name)}</h2>
+          <p class="pd__tag">${esc(p.tagline)}</p>
+          <p class="pd__desc">${esc(p.description)}</p>
+          <ul class="pd__hl">${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
+          <ul class="chips" aria-label="Built with">${p.tech.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+          <div class="pd__links">${links}</div>
+        </div>
+        <dl class="pd__meta">
+          <div><dt>category</dt><dd>${esc(data.cats[p.category] || p.category)}</dd></div>
+          <div><dt>source</dt><dd>${open ? 'open source' : 'closed source'}</dd></div>
+          <div><dt>status</dt><dd>${esc((data.statuses[p.status] || p.status || '').toLowerCase())}</dd></div>
+          <div><dt>last active</dt><dd>${esc(fmtDate(p.lastActive))}</dd></div>
+        </dl>
+      </div>`;
+    modal.setAttribute('aria-labelledby', 'pd-title');
+  }
+
+  function openProject(p) {
+    [...playing].forEach(pauseV);
+    render(p);
+    document.title = `${p.name} – ${baseTitle}`;
+    if (!modal.open) modal.showModal();
+    body.tabIndex = -1;
+    body.focus({ preventScroll: true }); // start on the dialog body, not the close button
+    body.scrollTop = 0;
+  }
+  function onHash() {
+    const p = byId.get(hashSlug());
+    if (p) { if (!modal.open || modal.dataset.slug !== p.slug) { modal.dataset.slug = p.slug; openProject(p); } }
+    else { pushed = false; if (modal.open) modal.close(); }
+  }
+  addEventListener('hashchange', onHash);
+  modal.addEventListener('close', () => {
+    const v = $('video', body); if (v) v.pause();
+    body.innerHTML = '';
+    delete modal.dataset.slug;
+    document.title = baseTitle;
+    if (hashSlug()) {
+      if (pushed) { pushed = false; history.back(); }
+      else history.replaceState(null, '', location.pathname + location.search);
+    }
+    if (opener) opener.focus({ preventScroll: true });
+    schedule();
+  });
+  modal.addEventListener('click', (e) => { if (e.target === modal || e.target.closest('[data-close]')) modal.close(); });
+
+  /* ------------------------------------------------------------- lightbox */
+  const lb = $('#lightbox');
+  const lbImg = $('#lb-img');
+  const lbCount = $('#lb-count');
+  let shots = [], shotBase = '', shotName = '', shotAt = 0;
+  function showShot(i) {
+    shotAt = (i + shots.length) % shots.length;
+    const s = shots[shotAt];
+    lbImg.src = shotBase + s.src;
+    lbImg.width = s.w; lbImg.height = s.h;
+    lbImg.alt = `${shotName} screenshot ${shotAt + 1} of ${shots.length}`;
+    lbCount.textContent = `${shotAt + 1} / ${shots.length}`;
+    const n = shots[(shotAt + 1) % shots.length];
+    if (n) new Image().src = shotBase + n.src;
+  }
+  body.addEventListener('click', (e) => {
+    const t = e.target.closest('.thumb');
+    if (!t) return;
+    const p = byId.get(modal.dataset.slug);
+    shots = p.shots; shotBase = p.base; shotName = p.name;
+    lb.classList.toggle('single', shots.length < 2);
+    showShot(+t.dataset.i);
+    lb.showModal();
+  });
+  lb.addEventListener('click', (e) => {
+    const act2 = e.target.closest('[data-lb]');
+    if (act2) { const a = act2.dataset.lb; a === 'close' ? lb.close() : showShot(shotAt + (a === 'next' ? 1 : -1)); }
+    else if (e.target === lb || e.target.classList.contains('lightbox__fig')) lb.close();
+  });
+  lb.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') showShot(shotAt + 1);
+    else if (e.key === 'ArrowLeft') showShot(shotAt - 1);
+    else if (e.key === 'Home') showShot(0);
+    else if (e.key === 'End') showShot(shots.length - 1);
+  });
+  lb.addEventListener('close', () => { lbImg.removeAttribute('src'); const t = $(`.thumb[data-i="${shotAt}"]`, body); if (t) t.focus({ preventScroll: true }); });
+
+  /* ----------------------------------------------------------------- boot */
+  applyFilters();
+  onHash();
+})();
+
+</script>
+</body>
+</html>
