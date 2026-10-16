@@ -1802,7 +1802,8 @@ body:has(dialog[open]) { overflow: hidden; }
   // Animations follow an eased copy of the scroll position (sy), so a mouse
   // wheel's 100px notches glide instead of jumping. Pinning and layout still use
   // the real scrollY; only the progress values that drive transforms are eased.
-  const TAU = 90; // ms; time constant of the easing
+  const TAU = 90;
+  const HOLD_P = 0.58; // callouts are all in by .35 + 2*.05 + .12 and fade out from .58 // ms; time constant of the easing
 
   function frame(now) {
     queued = false;
@@ -1843,9 +1844,11 @@ body:has(dialog[open]) { overflow: hidden; }
       const ch = chs[i];
       wakeV(ch, near);
       if (!r) continue;
-      const range = Math.max(1, r.height - sh * 1.4); // the last 0.4 screen holds the finished story before the dossier
+      const range = Math.max(1, r.height - sh);
       const et = r.top + lag; // eased top
-      const p = clamp(-et / range, 0, 1);
+      // Hold 0.4 screen at HOLD_P, when every callout and its note is in and none has started to fade.
+      const u = clamp(-et / range, 0, 1), hw = Math.min(0.5, (sh * 0.4) / range), ha = HOLD_P * (1 - hw);
+      const p = u < ha ? u / (1 - hw) : u < ha + hw ? HOLD_P : (u - hw) / (1 - hw);
       if (!isStatic) {
         const pv = Math.round(p * 10000) / 10000;
         if (pv !== ch._p) {
