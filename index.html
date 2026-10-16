@@ -493,7 +493,7 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-grove" data-slug="grove" data-i="1" data-o="landscape" data-focus="0.3958,0.2167,0.5972,0.5967" style="--par:1.6" aria-labelledby="n-grove">
+  <article class="ch" id="c-grove" data-slug="grove" data-i="1" data-o="landscape" data-focus="0,0,1,1" style="--par:1.6" aria-labelledby="n-grove">
     <div class="stage"><div class="grp">
       <header class="ttl">
         <p class="num" aria-hidden="true">02</p>
@@ -505,12 +505,12 @@ body:has(dialog[open]) { overflow: hidden; }
         </div>
       </header>
       <div class="cam">
-        <div class="frame"><div class="zoom"><div class="plate"><img src="media/grove/stage.jpg?v=31ced2a9" alt="grove interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/grove/highlight.mp4?v=3824e68b" data-poster="media/grove/highlight.jpg?v=f74b8234"></video></div></div>
-        <ul class="calls" aria-hidden="true"><li class="call l" data-k="0" style="--x:0.032;--y:0.38;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> fleet Macs</span></li><li class="call r feat" data-k="1" style="--x:0.678;--y:0.42;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> placed jobs</span></li><li class="call r" data-k="2" style="--x:0.792;--y:0.463;--i:2;--ly:0.017"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> bead lifecycle</span></li></ul>
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/grove/stage.jpg?v=6d83ddbd" alt="grove interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/grove/highlight.mp4?v=c012478b" data-poster="media/grove/highlight.jpg?v=dc01cba5"></video></div></div>
+        <ul class="calls" aria-hidden="true"><li class="call r feat" data-k="0" style="--x:0.8;--y:0.3;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> live log</span></li><li class="call l" data-k="1" style="--x:0.335;--y:0.452;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> your script</span></li><li class="call l" data-k="2" style="--x:0.2;--y:0.578;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> status timeline</span></li></ul>
       </div>
       <div class="under">
-        <ol class="legend" role="list" aria-label="Parts of the interface"><li class="" data-k="0" tabindex="0" style="--i:0"><i class="dot" aria-hidden="true"><b>1</b></i><span class="lg-l">fleet Macs</span><span class="lg-n">Each Mac in the grove fleet, with its CPU, memory and free VM slots</span></li><li class="feat" data-k="1" tabindex="0" style="--i:1"><i class="dot" aria-hidden="true"><b>2</b></i><span class="lg-l">placed jobs</span><span class="lg-n">This bead&#39;s agent session, lint and tests, each placed on a different Mac</span></li><li class="" data-k="2" tabindex="0" style="--i:2"><i class="dot" aria-hidden="true"><b>3</b></i><span class="lg-l">bead lifecycle</span><span class="lg-n">One bead&#39;s run from worktree to build, gates, approval and ship, with logs</span></li></ol>
-        <aside class="cap"><p class="kick">feature</p><h3>Runs landing on grove Macs</h3><p class="txt">Argos&#39;s Live map shows one bead&#39;s agent session, lint and tests landing on three different Macs in the grove fleet.</p></aside>
+        <ol class="legend" role="list" aria-label="Parts of the interface"><li class="feat" data-k="0" tabindex="0" style="--i:0"><i class="dot" aria-hidden="true"><b>1</b></i><span class="lg-l">live log</span><span class="lg-n">The build&#39;s output streams in line by line from the VM running it</span></li><li class="" data-k="1" tabindex="0" style="--i:1"><i class="dot" aria-hidden="true"><b>2</b></i><span class="lg-l">your script</span><span class="lg-n">Any command, run in a fresh VM on whichever Mac has a free slot</span></li><li class="" data-k="2" tabindex="0" style="--i:2"><i class="dot" aria-hidden="true"><b>3</b></i><span class="lg-l">status timeline</span><span class="lg-n">Submitted, started and finished, with the node and allocation it landed on</span></li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>A build on your own Macs</h3><p class="txt">Dispatch a job and grove runs it in a VM on one of your Macs, streaming the build log as it happens.</p></aside>
         <div class="meta">
           <p class="tech">Go / React / TypeScript / Tart / Nomad / Tailscale / MCP</p>
           <div class="acts"><a class="btn" href="https://github.com/gm2211/grove" target="_blank" rel="noopener" aria-label="grove source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a></div>
