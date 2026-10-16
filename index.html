@@ -128,7 +128,7 @@ html.typing .wm .w:not(.on) { display: none; }
 
 /* -------------------------------------------------------------- chapters */
 .ch {
-  position: relative; height: calc(var(--vh) * 2.6); --p: 0; --q: 0;
+  position: relative; height: calc(var(--vh) * 3); --p: 0; --q: 0;
   /* phases: t = linear 0..1 across the window, s = smoothstep of t */
   --t-num: clamp(0, calc(var(--q) * 2 - .5), 1);
   --t-kind: clamp(0, calc(var(--p) / .1), 1);
@@ -280,7 +280,7 @@ html.typing .wm .w:not(.on) { display: none; }
 }
 @media (max-width: 767px) {
   :root { --hh: 48px; --gut: 20px; --col: max(var(--gut), 11vw); }
-  .ch { height: calc(var(--vh) * 1.8); }
+  .ch { height: calc(var(--vh) * 2.2); }
   .hdr__r { gap: 12px; }
   .hdr__ch { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
   .say__name { font-size: clamp(32px, 10vw, 52px); }
@@ -1843,7 +1843,7 @@ body:has(dialog[open]) { overflow: hidden; }
       const ch = chs[i];
       wakeV(ch, near);
       if (!r) continue;
-      const range = Math.max(1, r.height - sh);
+      const range = Math.max(1, r.height - sh * 1.4); // the last 0.4 screen holds the finished story before the dossier
       const et = r.top + lag; // eased top
       const p = clamp(-et / range, 0, 1);
       if (!isStatic) {
