@@ -122,7 +122,10 @@ html.typing .wm .w:not(.on) { display: none; }
 .say__meta b { color: var(--orange); font-weight: 500; }
 .say__meta .sep { margin: 0 .9em; }
 .hint { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); margin: 0; text-align: center;
-  font: 400 12px/1 var(--mono); letter-spacing: .04em; color: var(--soft); opacity: clamp(0, calc(1 - var(--ip) * 12), 1); }
+  font: 400 13px/1 var(--mono); letter-spacing: .04em; color: var(--soft); opacity: clamp(0, calc(1 - var(--ip) * 12), 1); }
+/* the arrow drifts down every couple of seconds: enough to catch the eye, not enough to nag */
+.hint__a { display: inline-block; font-style: normal; animation: hint-bob 2.4s ease-in-out infinite; }
+@keyframes hint-bob { 0%, 55%, 100% { transform: translateY(0); } 25% { transform: translateY(4px); } }
 .hint span { opacity: 0; transition: opacity .7s; }
 .hint.ready span { opacity: 1; }
 
@@ -419,6 +422,7 @@ html.static .ch--portrait .clipb { box-shadow: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .btn, .dl, .row, .switch__track, .switch__track::after { transition: none; }
+  .hint__a { animation: none; }
 }
 html.static .hdr__r { visibility: visible; pointer-events: auto; }
 body:has(dialog[open]) { overflow: hidden; }
@@ -444,7 +448,7 @@ body:has(dialog[open]) { overflow: hidden; }
       <div class="dimple" aria-hidden="true"></div>
       <p class="intro__line" aria-hidden="true"><span class="intro__t">I talk to AI</span><i class="cur"></i></p>
       <div class="say"><h1 class="say__name">Giulio Mecocci</h1><p class="say__meta"><b>22</b> things I've built that way<span class="sep" aria-hidden="true">·</span><span aria-hidden="true">scroll ↓</span></p></div>
-      <p class="hint" aria-hidden="true"><span id="hint">scroll ↓</span></p>
+      <p class="hint" aria-hidden="true"><span id="hint">scroll <i class="hint__a">↓</i></span></p>
     </div>
   </section>
 
