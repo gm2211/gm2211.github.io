@@ -450,7 +450,7 @@ body:has(dialog[open]) { overflow: hidden; }
     <div class="intro__stage">
       <div class="dimple" aria-hidden="true"></div>
       <p class="intro__line" aria-hidden="true"><span class="intro__t">I talk to AI</span><i class="cur"></i></p>
-      <div class="say"><h1 class="say__name">Giulio Mecocci</h1><p class="say__meta"><b>22</b> things I've built that way<span class="sep" aria-hidden="true">·</span><span aria-hidden="true">scroll ↓</span></p></div>
+      <div class="say"><h1 class="say__name">Giulio Mecocci</h1><p class="say__meta"><b>23</b> things I've built that way<span class="sep" aria-hidden="true">·</span><span aria-hidden="true">scroll ↓</span></p></div>
       <p class="hint" aria-hidden="true"><span id="hint">scroll <i class="hint__a">↓</i></span></p>
     </div>
   </section>
@@ -726,10 +726,55 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-corto" data-slug="corto" data-i="6" data-o="landscape" data-focus="0.025,0,0.975,0.975" style="--par:1.6" aria-labelledby="n-corto">
+  <article class="ch" id="c-etude" data-slug="etude" data-i="6" data-o="landscape" data-focus="0,0,1,1" style="--par:1.6" aria-labelledby="n-etude">
     <div class="stage"><div class="grp">
       <header class="ttl">
         <p class="num" aria-hidden="true">07</p>
+        <h2 class="name" id="n-etude"><span class="mask"><span class="rise">Étude</span></span></h2>
+        <p class="tag">Native Mac chess analysis that reads any board screenshot</p>
+        <div class="ttl__r">
+          <p class="kind">desktop app · 2026 · open source</p>
+          <a class="dl" href="#d-etude" aria-label="Details for Étude, jump to the write-up below">details <span aria-hidden="true">↓</span></a>
+        </div>
+      </header>
+      <div class="cam">
+        <div class="frame"><div class="zoom"><div class="plate"><img src="media/etude/stage.jpg?v=54fe1202" alt="Étude interface" width="1600" height="1000" loading="lazy" decoding="async"></div></div></div><div class="clipw"><div class="clipb"><video muted loop playsinline preload="none" tabindex="-1" aria-hidden="true" disablepictureinpicture data-src="media/etude/highlight.mp4?v=d0c0316f" data-poster="media/etude/highlight.jpg?v=54fe1202"></video></div></div>
+        <ul class="calls" aria-hidden="true"><li class="call l feat" data-k="0" style="--x:0.36;--y:0.52;--i:0"><span class="ln"></span><i class="dot"><b>1</b></i><span class="lbl"><em>01</em> board</span></li><li class="call r" data-k="1" style="--x:0.88;--y:0.15;--i:1"><span class="ln"></span><i class="dot"><b>2</b></i><span class="lbl"><em>02</em> engine lines</span></li><li class="call r" data-k="2" style="--x:0.84;--y:0.905;--i:2"><span class="ln"></span><i class="dot"><b>3</b></i><span class="lbl"><em>03</em> ask ai</span></li></ul>
+      </div>
+      <div class="under">
+        <ol class="legend" role="list" aria-label="Parts of the interface"><li class="feat" data-k="0" tabindex="0" style="--i:0"><i class="dot" aria-hidden="true"><b>1</b></i><span class="lg-l">board</span><span class="lg-n">Paste or drop a board screenshot here; an on-device model reads the position</span></li><li class="" data-k="1" tabindex="0" style="--i:1"><i class="dot" aria-hidden="true"><b>2</b></i><span class="lg-l">engine lines</span><span class="lg-n">Stockfish 18 streams several lines, each with its own evaluation, as you move</span></li><li class="" data-k="2" tabindex="0" style="--i:2"><i class="dot" aria-hidden="true"><b>3</b></i><span class="lg-l">ask ai</span><span class="lg-n">Ask about any move, answered from engine lines using your own account</span></li></ol>
+        <aside class="cap"><p class="kick">feature</p><h3>Paste a screenshot, get a position</h3><p class="txt">Paste or drop a screenshot of any board; an on-device model reads it, then Stockfish analysis starts straight away.</p></aside>
+        <div class="meta">
+          <p class="tech">Swift / SwiftUI / Core ML / Stockfish 18 / Accelerate / Vision / BYOS</p>
+          <div class="acts"><a class="btn" href="https://github.com/gm2211/etude" target="_blank" rel="noopener" aria-label="Étude source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a></div>
+        </div>
+      </div>
+    </div></div>
+  </article>
+  <section class="dossier" id="d-etude" data-slug="etude" aria-labelledby="dn-etude">
+    <div class="dos">
+      <div class="dos__info">
+        <h3 class="kick dos__h" id="dn-etude" tabindex="-1"><b>07</b> details · Étude</h3>
+        <p class="dos__desc">A native macOS chess analysis app (SwiftUI, Apple silicon). Paste or drop a screenshot of any digital board and an on-device Core ML network reads the position in about 0.3 s, detecting orientation and the last move, or import PGN and FEN. A bundled Stockfish 18 streams multiple lines, and Game Review charts accuracy per side and an eval graph, and marks the critical moments with the refutation the move allowed, the better line and tactic tags. Plain-English explanations come from your own ChatGPT, Claude or other provider account, signed in through BYOS, and credentials stay in the Keychain.</p>
+        <ul class="dos__hl"><li>On-device CNN reads a board screenshot into a position in about 0.3 s, and lets you fix any square</li><li>Bundled Stockfish 18 with multi-line analysis, depth presets and adjustable threads and hash</li><li>Game review: accuracy per side, eval graph, critical moments with refutations and tactic tags</li></ul>
+        <ul class="chips" aria-label="Built with"><li>Swift</li><li>SwiftUI</li><li>Core ML</li><li>Stockfish 18</li><li>Accelerate</li><li>Vision</li><li>BYOS</li></ul>
+        <dl class="dos__meta">
+          <div><dt>category</dt><dd>Desktop apps</dd></div>
+          <div><dt>status</dt><dd>in progress</dd></div>
+          <div><dt>source</dt><dd>open source</dd></div>
+          <div><dt>last active</dt><dd>November 2026</dd></div>
+        </dl>
+        <div class="dos__links"><a class="btn" href="https://github.com/gm2211/etude" target="_blank" rel="noopener" aria-label="Étude source code (opens in a new tab)">source <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <div class="dos__media"><div class="dv" style="--ar:1.6"><video controls muted loop playsinline preload="none" aria-label="Étude demo" data-src="media/etude/demo.mp4?v=33e07ae9" data-poster="media/etude/poster.jpg?v=8c7b1e9d"></video></div><div class="dos__thumbs"><button type="button" class="thumb" data-i="0" aria-label="Open Étude screenshot 1 of 4"><img src="media/etude/shot-1.jpg?v=8c7b1e9d" alt="" width="1600" height="1000" loading="lazy" decoding="async"></button><button type="button" class="thumb" data-i="1" aria-label="Open Étude screenshot 2 of 4"><img src="media/etude/shot-2.jpg?v=dae71437" alt="" width="1600" height="1000" loading="lazy" decoding="async"></button><button type="button" class="thumb" data-i="2" aria-label="Open Étude screenshot 3 of 4"><img src="media/etude/shot-3.jpg?v=98846311" alt="" width="1600" height="1000" loading="lazy" decoding="async"></button><button type="button" class="thumb" data-i="3" aria-label="Open Étude screenshot 4 of 4"><img src="media/etude/shot-4.jpg?v=69e669ac" alt="" width="1600" height="1000" loading="lazy" decoding="async"></button></div></div>
+      
+    </div>
+  </section>
+
+  <article class="ch" id="c-corto" data-slug="corto" data-i="7" data-o="landscape" data-focus="0.025,0,0.975,0.975" style="--par:1.6" aria-labelledby="n-corto">
+    <div class="stage"><div class="grp">
+      <header class="ttl">
+        <p class="num" aria-hidden="true">08</p>
         <h2 class="name" id="n-corto"><span class="mask"><span class="rise">Corto</span></span></h2>
         <p class="tag">An RC sailboat, rewired to sail itself</p>
         <div class="ttl__r">
@@ -754,7 +799,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-corto" data-slug="corto" aria-labelledby="dn-corto">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-corto" tabindex="-1"><b>07</b> details · Corto</h3>
+        <h3 class="kick dos__h" id="dn-corto" tabindex="-1"><b>08</b> details · Corto</h3>
         <p class="dos__desc">Corto is a self-piloting model sailboat: I took an RC sailboat, removed the RC controls, and wired its rudder and sail servos to a Raspberry Pi with GPS and a wind speed and direction sensor. The boat&#39;s navigator turns the bearing to the next mark and the wind angle into rudder and sail trim, and a second Pi with knobs steers it by hand over LoRa. The web app is built to show that real boat live: position, heading, wind, rudder and sheet over LoRa, with a link indicator that fades as reports go stale, plus steering and a course you can send to it. A simulator runs the same navigator on modelled wind and current as a test bench, so changes are tried on land first.</p>
         <ul class="dos__hl"><li>Hardware: an RC sailboat with its receiver removed, a Raspberry Pi driving the rudder and sail servos, GPS, a wind speed and direction sensor and a LoRa radio</li><li>The app is built to show the real boat over LoRa: position, heading, wind, rudder and sheet, with link-state fading, manual steering and a course sent to the boat</li><li>A simulator test bench runs the boat&#39;s own navigator on modelled wind and current, so autopilot changes are tested before the water</li></ul>
         <ul class="chips" aria-label="Built with"><li>Python</li><li>Raspberry Pi</li><li>GPS</li><li>LoRa</li><li>Flask</li><li>Leaflet</li></ul>
@@ -771,10 +816,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-turbol" data-slug="turbol" data-i="7" data-o="landscape" data-focus="0.1725,0.174,0.5,0.5" style="--par:1.6" aria-labelledby="n-turbol">
+  <article class="ch" id="c-turbol" data-slug="turbol" data-i="8" data-o="landscape" data-focus="0.1725,0.174,0.5,0.5" style="--par:1.6" aria-labelledby="n-turbol">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">08</p>
+        <p class="num" aria-hidden="true">09</p>
         <h2 class="name" id="n-turbol"><span class="mask"><span class="rise">Turbol</span></span></h2>
         <p class="tag">Live turbulence map for people who hate bumpy flights</p>
         <div class="ttl__r">
@@ -799,7 +844,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-turbol" data-slug="turbol" aria-labelledby="dn-turbol">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-turbol" tabindex="-1"><b>08</b> details · Turbol</h3>
+        <h3 class="kick dos__h" id="dn-turbol" tabindex="-1"><b>09</b> details · Turbol</h3>
         <p class="dos__desc">Turbol is a &#39;how bumpy will my flight be&#39; web app: it paints NOAA&#39;s GTG-N nowcast and GTG v4 forecast onto a live map you can play through forecast hours, tilt into 3D or use to follow a live aircraft. Analyze a flight like Denver to Chicago and it gives a boarding-pass verdict and a minute-by-minute timeline, opens the route in 3D with the air around it as blocks, and shows how much rough air flying higher, lower or on a detour would save. A Scala (http4s) backend decodes the GRIB2 files and draws the map tiles, with a WAFS and GFS-derived layer outside the US.</p>
         <ul class="dos__hl"><li>Route corridor in 3D: the air around a flight as blocks, bright where it flies through, with a marker you scrub along the timeline</li><li>What-if sliders try the same flight higher, lower or on a detour and count the minutes of moderate-or-worse air saved</li><li>Live map plays an 18-hour GTG forecast; follow a live flight to see its turbulence ahead as a colored ribbon</li></ul>
         <ul class="chips" aria-label="Built with"><li>Scala</li><li>http4s</li><li>Vue</li><li>Leaflet</li><li>Python</li><li>GRIB2</li><li>Terraform</li></ul>
@@ -816,10 +861,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-jev-polls" data-slug="jev-polls" data-i="8" data-o="landscape" data-focus="0.3333,0.0737,0.6667,0.7895" style="--par:1.8957;--matte:#e3e9f0" aria-labelledby="n-jev-polls">
+  <article class="ch" id="c-jev-polls" data-slug="jev-polls" data-i="9" data-o="landscape" data-focus="0.3333,0.0737,0.6667,0.7895" style="--par:1.8957;--matte:#e3e9f0" aria-labelledby="n-jev-polls">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">09</p>
+        <p class="num" aria-hidden="true">10</p>
         <h2 class="name" id="n-jev-polls"><span class="mask"><span class="rise">Jev Polls</span></span></h2>
         <p class="tag">Visual workspace for phased studies on synthetic cohorts</p>
         <div class="ttl__r">
@@ -844,7 +889,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-jev-polls" data-slug="jev-polls" aria-labelledby="dn-jev-polls">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-jev-polls" tabindex="-1"><b>09</b> details · Jev Polls</h3>
+        <h3 class="kick dos__h" id="dn-jev-polls" tabindex="-1"><b>10</b> details · Jev Polls</h3>
         <p class="dos__desc">Jev Polls is a local, visual workspace for research on synthetic audiences: you build cohorts of personas, then wire phases together on a canvas so each step asks one cohort a question and passes its named results to later steps. TypeSafe&#39;s Jev model answers for each persona with typed probabilities rather than generated text, and every result is labelled a model judgment, not observed human behavior. Check and run prices a study before anything is sent, and a finished run opens as a one-page report; a companion CLI and an MCP server let coding agents read and edit the same workspace.</p>
         <ul class="dos__hl"><li>Phase outputs feed later phases, and oversized inputs are read in batches then combined (map-reduce) to fit Jev&#39;s 32k-token limit</li><li>Check and run lists every step&#39;s request count and an estimated TypeSafe cost before anything is sent</li><li>The one-page run report ends in a seat map: any person opens with their profile and full vote</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>Node.js</li><li>MCP</li><li>TypeSafe SDK</li><li>Zod</li></ul>
@@ -861,10 +906,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-motive" data-slug="motive" data-i="9" data-o="landscape" data-focus="0.17,0.135,0.81,0.81" style="--par:1.6" aria-labelledby="n-motive">
+  <article class="ch" id="c-motive" data-slug="motive" data-i="10" data-o="landscape" data-focus="0.17,0.135,0.81,0.81" style="--par:1.6" aria-labelledby="n-motive">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">10</p>
+        <p class="num" aria-hidden="true">11</p>
         <h2 class="name" id="n-motive"><span class="mask"><span class="rise">Motive</span></span></h2>
         <p class="tag">Car-buying workspace that ranks listings with a score it explains</p>
         <div class="ttl__r">
@@ -889,7 +934,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-motive" data-slug="motive" aria-labelledby="dn-motive">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-motive" tabindex="-1"><b>10</b> details · Motive</h3>
+        <h3 class="kick dos__h" id="dn-motive" tabindex="-1"><b>11</b> details · Motive</h3>
         <p class="dos__desc">Motive pulls car listings from 16 marketplace connectors into one normalized index and opens on Explore, a photo feed you react to. Expert Search ranks every candidate with a fit score built from price, mileage, year, feature and distance points, each with an adjustable weight, and a hunt turns a fuzzy brief into a saved search with price checks against comparable listings. Rows always link back to the original source and unknown fields stay unknown instead of being guessed; AI research is optional and bring-your-own.</p>
         <ul class="dos__hl"><li>Fit score broken down into price, mileage, year, feature and distance points, with weight sliders that re-rank live</li><li>16 marketplace connectors over stdio MCP feed one normalized index, and a row never appears without a real source URL</li><li>Hunts run in four steps (Research, Review, Explore, Start hunt), with price checks against comparable listings</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>React</li><li>Vite</li><li>Express</li><li>SQLite</li><li>Playwright</li><li>MCP</li></ul>
@@ -906,10 +951,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-landgrab" data-slug="landgrab" data-i="10" data-o="landscape" data-focus="0,0.0578,0.6944,0.6944" style="--par:1.6" aria-labelledby="n-landgrab">
+  <article class="ch" id="c-landgrab" data-slug="landgrab" data-i="11" data-o="landscape" data-focus="0,0.0578,0.6944,0.6944" style="--par:1.6" aria-labelledby="n-landgrab">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">11</p>
+        <p class="num" aria-hidden="true">12</p>
         <h2 class="name" id="n-landgrab"><span class="mask"><span class="rise">landgrab</span></span></h2>
         <p class="tag">Real county land auctions on a map, AI optional</p>
         <div class="ttl__r">
@@ -934,7 +979,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-landgrab" data-slug="landgrab" aria-labelledby="dn-landgrab">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-landgrab" tabindex="-1"><b>11</b> details · landgrab</h3>
+        <h3 class="kick dos__h" id="dn-landgrab" tabindex="-1"><b>12</b> details · landgrab</h3>
         <p class="dos__desc">landgrab is a map for finding undervalued US land: live county tax-forfeiture auctions and land-bank listings, browsable with no AI at all. Results cluster on the map, a dock lists them with an honest count of what was scanned, hidden and filtered out, and each parcel sheet puts a &quot;Read before acting&quot; box and a Public records table (FEMA, Census, OpenStreetMap, USGS, each row naming its agency) beside the county&#39;s own listing. An optional research thread uses an AI key you bring yourself, kept in the browser and never stored by the server, and every sheet carries a not-investment-advice notice.</p>
         <ul class="dos__hl"><li>Browse live county tax-forfeiture and land-bank auctions on a clustered map with no AI at all</li><li>Parcel sheet with a &quot;Read before acting&quot; box and a Public records table naming the agency behind each row</li><li>Bring-your-own-AI research thread; the key stays in the browser and flood, county and distance facts never come from the model</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>React</li><li>Vite</li><li>MapLibre GL JS</li><li>Express</li><li>SQLite</li><li>MCP</li></ul>
@@ -951,10 +996,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-specify" data-slug="specify" data-i="11" data-o="landscape" data-focus="0,0,0.75,0.75" style="--par:1.6" aria-labelledby="n-specify">
+  <article class="ch" id="c-specify" data-slug="specify" data-i="12" data-o="landscape" data-focus="0,0,0.75,0.75" style="--par:1.6" aria-labelledby="n-specify">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">12</p>
+        <p class="num" aria-hidden="true">13</p>
         <h2 class="name" id="n-specify"><span class="mask"><span class="rise">Specify</span></span></h2>
         <p class="tag">Version-controlled behavior specs that coding agents keep honest</p>
         <div class="ttl__r">
@@ -979,7 +1024,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-specify" data-slug="specify" aria-labelledby="dn-specify">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-specify" tabindex="-1"><b>12</b> details · Specify</h3>
+        <h3 class="kick dos__h" id="dn-specify" tabindex="-1"><b>13</b> details · Specify</h3>
         <p class="dos__desc">Specify keeps product intent in one small, versioned YAML spec: behaviors with stable IDs, plus the user&#39;s exact words attached as source quotes. A CLI lints the spec, projects it into PRODUCT.md and DESIGN.md context for agents, installs agent instructions, and gates changes: if code changed but the spec did not, `spec check` fails until you record a reason. It deliberately does not run tests or track a separate decision ledger.</p>
         <ul class="dos__hl"><li>Stable area/behavior IDs and verbatim source quotes keep decisions reviewable as code diffs</li><li>`spec check --base &lt;ref&gt;` fails when files change without a spec change or a stated reason</li><li>Also serves authoring tools over a local stdio MCP server and splits large specs into one file per area</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>Node.js</li><li>YAML</li><li>JSON Schema</li><li>MCP</li></ul>
@@ -996,10 +1041,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-renzo" data-slug="renzo" data-i="12" data-o="landscape" data-focus="0,0,1,1" style="--par:1.6" aria-labelledby="n-renzo">
+  <article class="ch" id="c-renzo" data-slug="renzo" data-i="13" data-o="landscape" data-focus="0,0,1,1" style="--par:1.6" aria-labelledby="n-renzo">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">13</p>
+        <p class="num" aria-hidden="true">14</p>
         <h2 class="name" id="n-renzo"><span class="mask"><span class="rise">Renzo</span></span></h2>
         <p class="tag">AI concierge kiosk and operations platform for residential buildings</p>
         <div class="ttl__r">
@@ -1024,7 +1069,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-renzo" data-slug="renzo" aria-labelledby="dn-renzo">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-renzo" tabindex="-1"><b>13</b> details · Renzo</h3>
+        <h3 class="kick dos__h" id="dn-renzo" tabindex="-1"><b>14</b> details · Renzo</h3>
         <p class="dos__desc">Renzo is a virtual concierge for residential buildings: a lobby kiosk and phone apps where residents talk or type to an AI agent, plus role-specific surfaces for management, board members, maintenance workers and lobby screens. A Python FastAPI and LiveKit agent handles chat and voice and reaches building data through MCP tools, while one Express and Prisma platform serves every web persona by hostname. Native SwiftUI iOS clients and Terraform-managed Kubernetes infrastructure round it out.</p>
         <ul class="dos__hl"><li>Voice and chat agent on a LiveKit worker plus FastAPI, calling platform tools over MCP</li><li>One Express and Prisma platform serves nine host-routed personas, from kiosk and lobby TV to board and admin</li><li>Spec-first workflow: every change is verified against renzo.spec.yaml, with SwiftUI resident and voice apps alongside</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>React</li><li>Express</li><li>Prisma</li><li>PostgreSQL</li><li>Python</li><li>FastAPI</li><li>LiveKit</li><li>SwiftUI</li><li>Terraform</li></ul>
@@ -1041,10 +1086,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-tapeze" data-slug="tapeze" data-i="13" data-o="landscape" data-focus="0.3294,0.1331,0.6706,0.6709" style="--par:1.6" aria-labelledby="n-tapeze">
+  <article class="ch" id="c-tapeze" data-slug="tapeze" data-i="14" data-o="landscape" data-focus="0.3294,0.1331,0.6706,0.6709" style="--par:1.6" aria-labelledby="n-tapeze">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">14</p>
+        <p class="num" aria-hidden="true">15</p>
         <h2 class="name" id="n-tapeze"><span class="mask"><span class="rise">Tapeze</span></span></h2>
         <p class="tag">A compact 3x3 gesture keyboard for iOS</p>
         <div class="ttl__r">
@@ -1069,7 +1114,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-tapeze" data-slug="tapeze" aria-labelledby="dn-tapeze">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-tapeze" tabindex="-1"><b>14</b> details · Tapeze</h3>
+        <h3 class="kick dos__h" id="dn-tapeze" tabindex="-1"><b>15</b> details · Tapeze</h3>
         <p class="dos__desc">A custom iOS keyboard extension that fits every letter, number, and symbol onto a 3x3 grid. Tap a key for its common letter; swipe between keys for the secondary letter shown between them; swipe-and-back or a circular loop types the uppercase version. Long swipes handle space and delete, so the whole alphabet works without a dedicated row for either.</p>
         <ul class="dos__hl"><li>Gesture grammar: tap, swipe-between, swipe-and-back for caps, and loop-to-capitalize, all on one 3x3 grid</li><li>Long horizontal swipe = space, long vertical swipe = delete — no dedicated keys for either</li><li>Three built-in themes plus adjustable edge softness and an optional live gesture trail</li></ul>
         <ul class="chips" aria-label="Built with"><li>Swift</li><li>SwiftUI</li><li>UIInputViewController</li><li>Custom keyboard extension</li></ul>
@@ -1086,10 +1131,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-local-assistant" data-slug="local-assistant" data-i="14" data-o="landscape" data-focus="0.2188,0.23,0.5625,0.5625" style="--par:1.6" aria-labelledby="n-local-assistant">
+  <article class="ch" id="c-local-assistant" data-slug="local-assistant" data-i="15" data-o="landscape" data-focus="0.2188,0.23,0.5625,0.5625" style="--par:1.6" aria-labelledby="n-local-assistant">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">15</p>
+        <p class="num" aria-hidden="true">16</p>
         <h2 class="name" id="n-local-assistant"><span class="mask"><span class="rise">assistant</span></span></h2>
         <p class="tag">A private, local personal assistant. One command, no cloud LLM</p>
         <div class="ttl__r">
@@ -1114,7 +1159,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-local-assistant" data-slug="local-assistant" aria-labelledby="dn-local-assistant">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-local-assistant" tabindex="-1"><b>15</b> details · assistant</h3>
+        <h3 class="kick dos__h" id="dn-local-assistant" tabindex="-1"><b>16</b> details · assistant</h3>
         <p class="dos__desc">A single `assistant` command that runs an open-source agent harness (omp) inside an Apple Container micro-VM against a local model (DeepSeek V4 Flash via ds4-server) — every cloud LLM provider is disabled in config. It connects to Outlook (read + draft, never send) and Dropbox through plugin-style OAuth, keeps sessions and tokens in an AES-256 vault that unmounts on exit, and prompts before every write or exec tool call.</p>
         <ul class="dos__hl"><li>Agent harness runs in an Apple Container micro-VM: non-root, read-only rootfs, all capabilities dropped</li><li>Outlook scope is User.Read Mail.ReadWrite only — drafts replies, can never send mail</li><li>AES-256 vault holds sessions/tokens/logs as ciphertext whenever the assistant isn&#39;t running</li></ul>
         <ul class="chips" aria-label="Built with"><li>Shell</li><li>Python</li><li>Docker</li><li>Apple Container</li><li>MLX</li><li>Microsoft Graph</li><li>Dropbox MCP</li></ul>
@@ -1131,10 +1176,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-mockify" data-slug="mockify" data-i="15" data-o="landscape" data-focus="0.015,0.182,0.48,0.48" style="--par:1.6" aria-labelledby="n-mockify">
+  <article class="ch" id="c-mockify" data-slug="mockify" data-i="16" data-o="landscape" data-focus="0.015,0.182,0.48,0.48" style="--par:1.6" aria-labelledby="n-mockify">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">16</p>
+        <p class="num" aria-hidden="true">17</p>
         <h2 class="name" id="n-mockify"><span class="mask"><span class="rise">mockify</span></span></h2>
         <p class="tag">Record a live app’s traffic, replay it as a mock</p>
         <div class="ttl__r">
@@ -1159,7 +1204,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-mockify" data-slug="mockify" aria-labelledby="dn-mockify">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-mockify" tabindex="-1"><b>16</b> details · mockify</h3>
+        <h3 class="kick dos__h" id="dn-mockify" tabindex="-1"><b>17</b> details · mockify</h3>
         <p class="dos__desc">mockify records the HTTP traffic of a live web app, either by letting an agent drive a headless browser through it or by browsing by hand, and replays it as a local mock server with no backend. Replay goes beyond the literal capture: it can answer requests it never saw, using inferred endpoint templates or an LLM-written implementation that is graded on held-out traffic and keeps state across POST and GET.</p>
         <ul class="dos__hl"><li>Demo capture: 152 requests and 39 screenshots from one agent-driven session</li><li>Replay tiers: inferred implementation, then recorded traffic, then shape-synthesized responses</li><li>Also exports OpenAPI 3.1, diffs a capture against a live target, and redacts credentials at write time</li></ul>
         <ul class="chips" aria-label="Built with"><li>TypeScript</li><li>Node.js</li><li>Playwright</li><li>MCP</li><li>Claude Agent SDK</li></ul>
@@ -1176,10 +1221,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-kube-dash" data-slug="kube-dash" data-i="16" data-o="landscape" data-focus="0.1325,0.108,0.71,0.71" style="--par:1.6" aria-labelledby="n-kube-dash">
+  <article class="ch" id="c-kube-dash" data-slug="kube-dash" data-i="17" data-o="landscape" data-focus="0.1325,0.108,0.71,0.71" style="--par:1.6" aria-labelledby="n-kube-dash">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">17</p>
+        <p class="num" aria-hidden="true">18</p>
         <h2 class="name" id="n-kube-dash"><span class="mask"><span class="rise">kube-dash</span></span></h2>
         <p class="tag">Local Kubernetes dashboard that wraps your own kubectl.</p>
         <div class="ttl__r">
@@ -1204,7 +1249,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-kube-dash" data-slug="kube-dash" aria-labelledby="dn-kube-dash">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-kube-dash" tabindex="-1"><b>17</b> details · kube-dash</h3>
+        <h3 class="kick dos__h" id="dn-kube-dash" tabindex="-1"><b>18</b> details · kube-dash</h3>
         <p class="dos__desc">kube-dash (`kd`) serves a browser UI on localhost and reads cluster resources through the kubectl and kubeconfig you already have, so there is nothing to install in the cluster. It has pages for the common workload types plus an All Cluster Objects view that pages through every listable API type, including CRDs, and it keeps load bounded on big clusters with 50 to 100 object pages and server-side selectors. Pods get streaming logs, a shell, describe and YAML edit.</p>
         <ul class="dos__hl"><li>No in-cluster install: a Python helper shells out to your local kubectl</li><li>Bounded paging and server-side filters for clusters with tens of thousands of objects</li><li>Dependency-free front end with live pod logs and shell over WebSockets</li></ul>
         <ul class="chips" aria-label="Built with"><li>Python</li><li>JavaScript</li><li>HTML/CSS</li><li>kubectl</li><li>WebSocket</li></ul>
@@ -1221,10 +1266,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-nexrad-mcp" data-slug="nexrad-mcp" data-i="17" data-o="landscape" data-focus="0,0.05,0.825,0.825" style="--par:1.6" aria-labelledby="n-nexrad-mcp">
+  <article class="ch" id="c-nexrad-mcp" data-slug="nexrad-mcp" data-i="18" data-o="landscape" data-focus="0,0.05,0.825,0.825" style="--par:1.6" aria-labelledby="n-nexrad-mcp">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">18</p>
+        <p class="num" aria-hidden="true">19</p>
         <h2 class="name" id="n-nexrad-mcp"><span class="mask"><span class="rise">nexrad-mcp</span></span></h2>
         <p class="tag">Raw NEXRAD radar data, exposed to AI clients</p>
         <div class="ttl__r">
@@ -1249,7 +1294,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-nexrad-mcp" data-slug="nexrad-mcp" aria-labelledby="dn-nexrad-mcp">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-nexrad-mcp" tabindex="-1"><b>18</b> details · nexrad-mcp</h3>
+        <h3 class="kick dos__h" id="dn-nexrad-mcp" tabindex="-1"><b>19</b> details · nexrad-mcp</h3>
         <p class="dos__desc">An MCP server that decodes NOAA&#39;s public NEXRAD Level II archive and lets an AI client query dual-pol radar moments (reflectivity, velocity, correlation coefficient, ZDR) at any point, tilt and archived time, alongside Level 3 products, NWS warnings and GOES lightning. It returns decoded numbers rather than pre-rendered radar images, so a model can weigh reflectivity, velocity and CC together, for example flagging a low-CC debris signature the way a forecaster would in RadarScope.</p>
         <ul class="dos__hl"><li>13 MCP tools over Level II and Level 3 radar, NWS warnings and forecasts, and GOES GLM lightning</li><li>Decodes raw volumes with Py-ART and MetPy from public AWS buckets; no API keys</li><li>One-line uvx install; stdio by default, optional streamable-HTTP transport</li></ul>
         <ul class="chips" aria-label="Built with"><li>Python</li><li>MCP</li><li>Py-ART</li><li>MetPy</li><li>AWS S3 (NOAA Open Data)</li><li>uv</li></ul>
@@ -1266,10 +1311,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-claude-plugins" data-slug="claude-plugins" data-i="18" data-o="landscape" data-focus="0,0,0.625,0.625" style="--par:1.6" aria-labelledby="n-claude-plugins">
+  <article class="ch" id="c-claude-plugins" data-slug="claude-plugins" data-i="19" data-o="landscape" data-focus="0,0,0.625,0.625" style="--par:1.6" aria-labelledby="n-claude-plugins">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">19</p>
+        <p class="num" aria-hidden="true">20</p>
         <h2 class="name" id="n-claude-plugins"><span class="mask"><span class="rise">claude-plugins</span></span></h2>
         <p class="tag">Claude Code plugins and a Zellij-based multi-agent terminal setup.</p>
         <div class="ttl__r">
@@ -1294,7 +1339,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-claude-plugins" data-slug="claude-plugins" aria-labelledby="dn-claude-plugins">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-claude-plugins" tabindex="-1"><b>19</b> details · claude-plugins</h3>
+        <h3 class="kick dos__h" id="dn-claude-plugins" tabindex="-1"><b>20</b> details · claude-plugins</h3>
         <p class="dos__desc">A Claude Code plugin marketplace (a local-Excalidraw diagram skill and a spec-driven TDD build-feature workflow) plus the terminal tooling used to run several agents side by side. The centerpiece is zellij-attention, a Rust/WASM Zellij plugin that marks background tabs as waiting or completed when Claude Code hooks signal it, alongside zsh helpers for git worktrees and a Docker sandbox, and kitty/Neovim configs. An earlier async multi-agent coordinator plugin was removed from the repo in April 2026.</p>
         <ul class="dos__hl"><li>zellij-attention: Rust/WASM plugin that flags background tabs from Claude Code hooks</li><li>pretty-diagrams: Excalidraw and an MCP server run locally in Docker, with no internet route for the app container</li><li>build-feature: eight-phase spec-driven TDD flow with self-review and Codex review</li></ul>
         <ul class="chips" aria-label="Built with"><li>Rust</li><li>WebAssembly</li><li>Zellij</li><li>Zsh</li><li>Docker</li><li>Excalidraw</li><li>MCP</li></ul>
@@ -1311,10 +1356,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-trim-lab" data-slug="trim-lab" data-i="19" data-o="landscape" data-focus="0.2507,0.0733,0.7403,0.74" style="--par:1.6" aria-labelledby="n-trim-lab">
+  <article class="ch" id="c-trim-lab" data-slug="trim-lab" data-i="20" data-o="landscape" data-focus="0.2507,0.0733,0.7403,0.74" style="--par:1.6" aria-labelledby="n-trim-lab">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">20</p>
+        <p class="num" aria-hidden="true">21</p>
         <h2 class="name" id="n-trim-lab"><span class="mask"><span class="rise">Trim Lab</span></span></h2>
         <p class="tag">Learn sail trim on a Colgate 26, line by line</p>
         <div class="ttl__r">
@@ -1339,7 +1384,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-trim-lab" data-slug="trim-lab" aria-labelledby="dn-trim-lab">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-trim-lab" tabindex="-1"><b>20</b> details · Trim Lab</h3>
+        <h3 class="kick dos__h" id="dn-trim-lab" tabindex="-1"><b>21</b> details · Trim Lab</h3>
         <p class="dos__desc">An interactive trainer for sail trim on the Colgate 26 sailboat. Every control line has a slider, and an approximate steady-state model (segment aero, a two-element vortex panel method and a heel and leeway force balance) updates boat speed, heel, weather helm and a trim-balance score as you pull. A Babylon.js 3D view runs a position-based cloth simulation for the sails, with wind-dye streamlines drawn from the solved circulation, and the app also has line guides, concept cards and a deck of 66 doctrine-checked drills.</p>
         <ul class="dos__hl"><li>Sails fold, flog and luff in the browser: position-based cloth in Babylon.js with a wind-driven boom and jib clew</li><li>Per-slider trim indicators and a coordinate-descent &#39;perfect trim&#39; solver show where each line should sit for the wind</li><li>Boat modelled in Blender from photo references; the entire app ships as one self-contained page built by a Python script</li></ul>
         <ul class="chips" aria-label="Built with"><li>JavaScript</li><li>Babylon.js</li><li>WebGL</li><li>Python</li><li>Blender</li><li>GitHub Pages</li></ul>
@@ -1356,10 +1401,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-ecg" data-slug="ecg" data-i="20" data-o="landscape" data-focus="0.1667,0.2867,0.69,0.69" style="--par:1.6" aria-labelledby="n-ecg">
+  <article class="ch" id="c-ecg" data-slug="ecg" data-i="21" data-o="landscape" data-focus="0.1667,0.2867,0.69,0.69" style="--par:1.6" aria-labelledby="n-ecg">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">21</p>
+        <p class="num" aria-hidden="true">22</p>
         <h2 class="name" id="n-ecg"><span class="mask"><span class="rise">ECG Studio</span></span></h2>
         <p class="tag">See how the heart&#39;s wiring writes the ECG</p>
         <div class="ttl__r">
@@ -1384,7 +1429,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-ecg" data-slug="ecg" aria-labelledby="dn-ecg">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-ecg" tabindex="-1"><b>21</b> details · ECG Studio</h3>
+        <h3 class="kick dos__h" id="dn-ecg" tabindex="-1"><b>22</b> details · ECG Studio</h3>
         <p class="dos__desc">A single-page teaching tool that pairs 3D anatomical heart models with live ECG traces. The Simulator lets you pick a conduction problem (bundle branch blocks, WPW, AV block, an AV re-entry loop) and watch activation spread through a see-inside His-Purkinje network on one clock while the paper-calibrated lead trace changes; the Lead explorer maps nine scenarios, including six infarct territories, onto a torso with electrodes and per-lead ABNORMAL flags, and both halves have a quiz mode. Plain JavaScript and three.js with no build step; the heart and torso meshes are Human Reference Atlas models (CC BY 4.0) credited in-app.</p>
         <ul class="dos__hl"><li>Pick a conduction problem and watch activation spread through a see-inside His-Purkinje network</li><li>Six infarct territories light an illustrative heart region while abnormal leads get flagged</li><li>Quiz modes in both views: inspect the beat, pick the mechanism or mark the abnormal strips, get scored</li></ul>
         <ul class="chips" aria-label="Built with"><li>JavaScript</li><li>three.js</li><li>WebGL</li><li>HTML/CSS</li></ul>
@@ -1401,10 +1446,10 @@ body:has(dialog[open]) { overflow: hidden; }
     </div>
   </section>
 
-  <article class="ch" id="c-floatplan" data-slug="floatplan" data-i="21" data-o="landscape" data-focus="0.0069,0.1556,0.7014,0.7011" style="--par:1.6" aria-labelledby="n-floatplan">
+  <article class="ch" id="c-floatplan" data-slug="floatplan" data-i="22" data-o="landscape" data-focus="0.0069,0.1556,0.7014,0.7011" style="--par:1.6" aria-labelledby="n-floatplan">
     <div class="stage"><div class="grp">
       <header class="ttl">
-        <p class="num" aria-hidden="true">22</p>
+        <p class="num" aria-hidden="true">23</p>
         <h2 class="name" id="n-floatplan"><span class="mask"><span class="rise">Pier 25 Float Plan</span></span></h2>
         <p class="tag">Go/no-go sailing dashboard for New York Harbor</p>
         <div class="ttl__r">
@@ -1429,7 +1474,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="dossier" id="d-floatplan" data-slug="floatplan" aria-labelledby="dn-floatplan">
     <div class="dos">
       <div class="dos__info">
-        <h3 class="kick dos__h" id="dn-floatplan" tabindex="-1"><b>22</b> details · Pier 25 Float Plan</h3>
+        <h3 class="kick dos__h" id="dn-floatplan" tabindex="-1"><b>23</b> details · Pier 25 Float Plan</h3>
         <p class="dos__desc">A single-file web app that pulls NWS forecasts and marine advisories, NOAA tidal currents, measured wind from nearby stations and NEXRAD radar, then turns them into a GO / CAUTION / NO-GO verdict for a chosen departure time on the Hudson. It suggests which way to head first against the current, runs a sail simulator of the route, and generates a ready-to-file float plan with a compact plan code. Planning support only, not a navigation tool.</p>
         <ul class="dos__hl"><li>One vanilla-JS HTML file with no build step; every data card links to its source</li><li>Verdict from editable wind and gust limits, current and advisories; missing data never turns into a green light</li><li>Forecast-model comparison (NWS, GFS, ECMWF, ICON) overlaid on measured wind from nearby stations</li></ul>
         <ul class="chips" aria-label="Built with"><li>JavaScript</li><li>HTML</li><li>CSS</li><li>Leaflet</li><li>NOAA CO-OPS API</li><li>NWS API</li><li>Open-Meteo</li><li>Terraform</li></ul>
@@ -1450,9 +1495,9 @@ body:has(dialog[open]) { overflow: hidden; }
   <section class="idx" id="index" aria-labelledby="idx-h" tabindex="-1">
     <h2 class="idx__h" id="idx-h">index</h2>
     <p class="idx__intro">I like turning ideas into working software before they cool off. AI agents do much of the typing now, so I get to build far more, and spend my own time on taste, decisions and finishing touches. Some of it is open source, some isn&#39;t, and all of it runs.</p>
-    <p class="idx__tally">22 projects, 13 open source, 7 live</p>
+    <p class="idx__tally">23 projects, 14 open source, 7 live</p>
     <div class="filters" id="filters">
-      <div class="fchips" role="group" aria-label="Category"><button type="button" class="fchip" data-cat="all" aria-pressed="true">all <span class="n">22</span></button><button type="button" class="fchip" data-cat="web-app" aria-pressed="false">web app <span class="n">8</span></button><button type="button" class="fchip" data-cat="ios-app" aria-pressed="false">ios app <span class="n">1</span></button><button type="button" class="fchip" data-cat="desktop-app" aria-pressed="false">desktop app <span class="n">1</span></button><button type="button" class="fchip" data-cat="dev-tool" aria-pressed="false">dev tool <span class="n">2</span></button><button type="button" class="fchip" data-cat="infra" aria-pressed="false">infra <span class="n">1</span></button><button type="button" class="fchip" data-cat="game" aria-pressed="false">game <span class="n">1</span></button><button type="button" class="fchip" data-cat="creative" aria-pressed="false">creative <span class="n">1</span></button><button type="button" class="fchip" data-cat="ai-tooling" aria-pressed="false">ai tooling <span class="n">7</span></button></div>
+      <div class="fchips" role="group" aria-label="Category"><button type="button" class="fchip" data-cat="all" aria-pressed="true">all <span class="n">23</span></button><button type="button" class="fchip" data-cat="web-app" aria-pressed="false">web app <span class="n">8</span></button><button type="button" class="fchip" data-cat="ios-app" aria-pressed="false">ios app <span class="n">1</span></button><button type="button" class="fchip" data-cat="desktop-app" aria-pressed="false">desktop app <span class="n">2</span></button><button type="button" class="fchip" data-cat="dev-tool" aria-pressed="false">dev tool <span class="n">2</span></button><button type="button" class="fchip" data-cat="infra" aria-pressed="false">infra <span class="n">1</span></button><button type="button" class="fchip" data-cat="game" aria-pressed="false">game <span class="n">1</span></button><button type="button" class="fchip" data-cat="creative" aria-pressed="false">creative <span class="n">1</span></button><button type="button" class="fchip" data-cat="ai-tooling" aria-pressed="false">ai tooling <span class="n">7</span></button></div>
       <label class="switch">
         <input type="checkbox" id="os-only" role="switch">
         <span class="switch__track" aria-hidden="true"></span>
@@ -1511,8 +1556,16 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-sr">closed</td>
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
-<tr class="row" data-slug="corto" data-cat="creative" data-open="1">
+<tr class="row" data-slug="etude" data-cat="desktop-app" data-open="1">
           <td class="c-no">07</td>
+          <td class="c-nm"><a href="#c-etude">Étude</a><span class="c-tag">Native Mac chess analysis that reads any board screenshot</span></td>
+          <td class="c-ct">desktop app</td>
+          <td class="c-yr">2026</td>
+          <td class="c-sr">open</td>
+          <td class="c-lv"><span aria-label="no live site">–</span></td>
+        </tr>
+<tr class="row" data-slug="corto" data-cat="creative" data-open="1">
+          <td class="c-no">08</td>
           <td class="c-nm"><a href="#c-corto">Corto</a><span class="c-tag">An RC sailboat, rewired to sail itself</span></td>
           <td class="c-ct">creative</td>
           <td class="c-yr">2026</td>
@@ -1520,7 +1573,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="turbol" data-cat="web-app" data-open="1">
-          <td class="c-no">08</td>
+          <td class="c-no">09</td>
           <td class="c-nm"><a href="#c-turbol">Turbol</a><span class="c-tag">Live turbulence map for people who hate bumpy flights</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1528,7 +1581,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="jev-polls" data-cat="ai-tooling" data-open="1">
-          <td class="c-no">09</td>
+          <td class="c-no">10</td>
           <td class="c-nm"><a href="#c-jev-polls">Jev Polls</a><span class="c-tag">Visual workspace for phased studies on synthetic cohorts</span></td>
           <td class="c-ct">ai tooling</td>
           <td class="c-yr">2026</td>
@@ -1536,7 +1589,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="motive" data-cat="web-app" data-open="0">
-          <td class="c-no">10</td>
+          <td class="c-no">11</td>
           <td class="c-nm"><a href="#c-motive">Motive</a><span class="c-tag">Car-buying workspace that ranks listings with a score it explains</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1544,7 +1597,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><a href="https://motive-vp3s.onrender.com" target="_blank" rel="noopener" aria-label="Motive live at motive-vp3s.onrender.com (opens in a new tab)">motive-vp3s.onrender.com ↗</a></td>
         </tr>
 <tr class="row" data-slug="landgrab" data-cat="web-app" data-open="0">
-          <td class="c-no">11</td>
+          <td class="c-no">12</td>
           <td class="c-nm"><a href="#c-landgrab">landgrab</a><span class="c-tag">Real county land auctions on a map, AI optional</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1552,7 +1605,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="specify" data-cat="ai-tooling" data-open="1">
-          <td class="c-no">12</td>
+          <td class="c-no">13</td>
           <td class="c-nm"><a href="#c-specify">Specify</a><span class="c-tag">Version-controlled behavior specs that coding agents keep honest</span></td>
           <td class="c-ct">ai tooling</td>
           <td class="c-yr">2026</td>
@@ -1560,7 +1613,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="renzo" data-cat="web-app" data-open="0">
-          <td class="c-no">13</td>
+          <td class="c-no">14</td>
           <td class="c-nm"><a href="#c-renzo">Renzo</a><span class="c-tag">AI concierge kiosk and operations platform for residential buildings</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1568,7 +1621,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="tapeze" data-cat="ios-app" data-open="1">
-          <td class="c-no">14</td>
+          <td class="c-no">15</td>
           <td class="c-nm"><a href="#c-tapeze">Tapeze</a><span class="c-tag">A compact 3x3 gesture keyboard for iOS</span></td>
           <td class="c-ct">ios app</td>
           <td class="c-yr">2026</td>
@@ -1576,7 +1629,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><a href="https://gm2211.github.io/tapeze/" target="_blank" rel="noopener" aria-label="Tapeze live at gm2211.github.io/tapeze (opens in a new tab)">gm2211.github.io/tapeze ↗</a></td>
         </tr>
 <tr class="row" data-slug="local-assistant" data-cat="ai-tooling" data-open="0">
-          <td class="c-no">15</td>
+          <td class="c-no">16</td>
           <td class="c-nm"><a href="#c-local-assistant">assistant</a><span class="c-tag">A private, local personal assistant. One command, no cloud LLM</span></td>
           <td class="c-ct">ai tooling</td>
           <td class="c-yr">2026</td>
@@ -1584,7 +1637,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="mockify" data-cat="dev-tool" data-open="1">
-          <td class="c-no">16</td>
+          <td class="c-no">17</td>
           <td class="c-nm"><a href="#c-mockify">mockify</a><span class="c-tag">Record a live app’s traffic, replay it as a mock</span></td>
           <td class="c-ct">dev tool</td>
           <td class="c-yr">2026</td>
@@ -1592,7 +1645,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="kube-dash" data-cat="dev-tool" data-open="1">
-          <td class="c-no">17</td>
+          <td class="c-no">18</td>
           <td class="c-nm"><a href="#c-kube-dash">kube-dash</a><span class="c-tag">Local Kubernetes dashboard that wraps your own kubectl.</span></td>
           <td class="c-ct">dev tool</td>
           <td class="c-yr">2026</td>
@@ -1600,7 +1653,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="nexrad-mcp" data-cat="ai-tooling" data-open="1">
-          <td class="c-no">18</td>
+          <td class="c-no">19</td>
           <td class="c-nm"><a href="#c-nexrad-mcp">nexrad-mcp</a><span class="c-tag">Raw NEXRAD radar data, exposed to AI clients</span></td>
           <td class="c-ct">ai tooling</td>
           <td class="c-yr">2026</td>
@@ -1608,7 +1661,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="claude-plugins" data-cat="ai-tooling" data-open="1">
-          <td class="c-no">19</td>
+          <td class="c-no">20</td>
           <td class="c-nm"><a href="#c-claude-plugins">claude-plugins</a><span class="c-tag">Claude Code plugins and a Zellij-based multi-agent terminal setup.</span></td>
           <td class="c-ct">ai tooling</td>
           <td class="c-yr">2026</td>
@@ -1616,7 +1669,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><span aria-label="no live site">–</span></td>
         </tr>
 <tr class="row" data-slug="trim-lab" data-cat="web-app" data-open="1">
-          <td class="c-no">20</td>
+          <td class="c-no">21</td>
           <td class="c-nm"><a href="#c-trim-lab">Trim Lab</a><span class="c-tag">Learn sail trim on a Colgate 26, line by line</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1624,7 +1677,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><a href="https://gm2211.github.io/trim-lab/" target="_blank" rel="noopener" aria-label="Trim Lab live at gm2211.github.io/trim-lab (opens in a new tab)">gm2211.github.io/trim-lab ↗</a></td>
         </tr>
 <tr class="row" data-slug="ecg" data-cat="web-app" data-open="0">
-          <td class="c-no">21</td>
+          <td class="c-no">22</td>
           <td class="c-nm"><a href="#c-ecg">ECG Studio</a><span class="c-tag">See how the heart&#39;s wiring writes the ECG</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1632,7 +1685,7 @@ body:has(dialog[open]) { overflow: hidden; }
           <td class="c-lv"><a href="https://gm2211.github.io/ecg/" target="_blank" rel="noopener" aria-label="ECG Studio live at gm2211.github.io/ecg (opens in a new tab)">gm2211.github.io/ecg ↗</a></td>
         </tr>
 <tr class="row" data-slug="floatplan" data-cat="web-app" data-open="1">
-          <td class="c-no">22</td>
+          <td class="c-no">23</td>
           <td class="c-nm"><a href="#c-floatplan">Pier 25 Float Plan</a><span class="c-tag">Go/no-go sailing dashboard for New York Harbor</span></td>
           <td class="c-ct">web app</td>
           <td class="c-yr">2026</td>
@@ -1672,7 +1725,7 @@ body:has(dialog[open]) { overflow: hidden; }
   <p class="lb-count" id="lb-count" aria-live="polite"></p>
 </dialog>
 
-<script type="application/json" id="data">{"projects":[{"slug":"argos","name":"Argos","shots":[{"src":"media/argos/shot-1.jpg?v=fb2d9d63","w":1600,"h":1000},{"src":"media/argos/shot-2.jpg?v=17a4f750","w":1600,"h":1000},{"src":"media/argos/shot-3.jpg?v=24d76532","w":1600,"h":1000},{"src":"media/argos/shot-4.jpg?v=f7022396","w":1600,"h":1000}]},{"slug":"grove","name":"grove","shots":[{"src":"media/grove/shot-1.jpg?v=72076e1a","w":1600,"h":1000},{"src":"media/grove/shot-2.jpg?v=d8eefa65","w":1600,"h":1000},{"src":"media/grove/shot-3.jpg?v=62cd4f70","w":1600,"h":1000},{"src":"media/grove/shot-4.jpg?v=b4f6c379","w":1600,"h":1000}]},{"slug":"byos","name":"BYOS","shots":[{"src":"media/byos/shot-1.jpg?v=65e29123","w":1600,"h":1000},{"src":"media/byos/shot-2.jpg?v=78958072","w":1600,"h":1280},{"src":"media/byos/shot-3.jpg?v=8b7b1bc3","w":1600,"h":1000},{"src":"media/byos/shot-4.jpg?v=bc8246ef","w":1600,"h":1000}]},{"slug":"skim","name":"Skim","shots":[{"src":"media/skim/shot-1.jpg?v=46eee71a","w":1600,"h":1000},{"src":"media/skim/shot-2.jpg?v=c36c7e9b","w":1600,"h":1000},{"src":"media/skim/shot-3.jpg?v=b9e954b1","w":1600,"h":1000},{"src":"media/skim/shot-4.jpg?v=f53ff32a","w":1600,"h":1000}]},{"slug":"tracked","name":"Tracked","shots":[{"src":"media/tracked/shot-1.jpg?v=42d6cdad","w":1600,"h":1000},{"src":"media/tracked/shot-2.jpg?v=75962eaf","w":1600,"h":1000},{"src":"media/tracked/shot-3.jpg?v=38082d14","w":1600,"h":1000},{"src":"media/tracked/shot-4.jpg?v=67b42ecf","w":1600,"h":1000}]},{"slug":"orbital-empire","name":"Orbital Empire","shots":[{"src":"media/orbital-empire/shot-1.jpg?v=72082054","w":1600,"h":1000},{"src":"media/orbital-empire/shot-2.jpg?v=ad4de61d","w":1600,"h":1000},{"src":"media/orbital-empire/shot-3.jpg?v=c2718ccd","w":1600,"h":1000},{"src":"media/orbital-empire/shot-4.jpg?v=867d5bfc","w":1600,"h":1000}]},{"slug":"corto","name":"Corto","shots":[{"src":"media/corto/shot-1.jpg?v=97632d91","w":1600,"h":1000},{"src":"media/corto/shot-2.jpg?v=bb19b090","w":1600,"h":1000},{"src":"media/corto/shot-3.jpg?v=8403b359","w":1600,"h":1000},{"src":"media/corto/shot-4.jpg?v=81a299e7","w":1600,"h":1000}]},{"slug":"turbol","name":"Turbol","shots":[{"src":"media/turbol/shot-1.jpg?v=47714558","w":1600,"h":1000},{"src":"media/turbol/shot-2.jpg?v=596cba04","w":1600,"h":1000},{"src":"media/turbol/shot-3.jpg?v=04ff1b7b","w":1600,"h":1000},{"src":"media/turbol/shot-4.jpg?v=c1065e27","w":1600,"h":1000}]},{"slug":"jev-polls","name":"Jev Polls","shots":[{"src":"media/jev-polls/shot-1.jpg?v=13d964e0","w":1600,"h":1000},{"src":"media/jev-polls/shot-2.jpg?v=6de3ec2a","w":1600,"h":1000},{"src":"media/jev-polls/shot-3.jpg?v=a3419d0c","w":1600,"h":1000},{"src":"media/jev-polls/shot-4.jpg?v=0c9e6a65","w":1600,"h":1000}]},{"slug":"motive","name":"Motive","shots":[{"src":"media/motive/shot-1.jpg?v=76f976fe","w":1600,"h":1000},{"src":"media/motive/shot-2.jpg?v=54a003a6","w":1600,"h":1000},{"src":"media/motive/shot-3.jpg?v=3eb4d091","w":1600,"h":1000},{"src":"media/motive/shot-4.jpg?v=5eadde1f","w":1600,"h":1000}]},{"slug":"landgrab","name":"landgrab","shots":[{"src":"media/landgrab/shot-1.jpg?v=0dd46f14","w":1600,"h":1000},{"src":"media/landgrab/shot-2.jpg?v=c88e5b8d","w":1600,"h":1000},{"src":"media/landgrab/shot-3.jpg?v=4586c380","w":1600,"h":1000},{"src":"media/landgrab/shot-4.jpg?v=d98b57b5","w":1600,"h":1000}]},{"slug":"specify","name":"Specify","shots":[{"src":"media/specify/shot-1.jpg?v=4a319ba5","w":1600,"h":1000},{"src":"media/specify/shot-2.jpg?v=734f5698","w":1600,"h":1000},{"src":"media/specify/shot-3.jpg?v=3b208b95","w":1600,"h":1000},{"src":"media/specify/shot-4.jpg?v=1cd9735c","w":1600,"h":1000}]},{"slug":"renzo","name":"Renzo","shots":[{"src":"media/renzo/shot-1.jpg?v=4815cd07","w":1600,"h":1000},{"src":"media/renzo/shot-2.jpg?v=a0957118","w":1600,"h":1000},{"src":"media/renzo/shot-3.jpg?v=412d0cdb","w":555,"h":1200},{"src":"media/renzo/shot-4.jpg?v=4d939638","w":1600,"h":1030}]},{"slug":"tapeze","name":"Tapeze","shots":[{"src":"media/tapeze/shot-1.jpg?v=64f20b25","w":554,"h":1200},{"src":"media/tapeze/shot-2.jpg?v=2cc30587","w":554,"h":1200},{"src":"media/tapeze/shot-3.jpg?v=c7242b57","w":552,"h":1200},{"src":"media/tapeze/shot-4.jpg?v=a51b8f58","w":552,"h":1200}]},{"slug":"local-assistant","name":"assistant","shots":[{"src":"media/local-assistant/shot-1.jpg?v=2549b4c5","w":1600,"h":950},{"src":"media/local-assistant/shot-2.jpg?v=3469a82f","w":1600,"h":1012}]},{"slug":"mockify","name":"mockify","shots":[{"src":"media/mockify/shot-1.jpg?v=34426594","w":1000,"h":826},{"src":"media/mockify/shot-2.jpg?v=fbfbd185","w":980,"h":640},{"src":"media/mockify/shot-3.jpg?v=af73b7a6","w":1600,"h":260},{"src":"media/mockify/shot-4.jpg?v=d57522a3","w":1000,"h":826}]},{"slug":"kube-dash","name":"kube-dash","shots":[{"src":"media/kube-dash/shot-1.jpg?v=a308325c","w":1600,"h":1000},{"src":"media/kube-dash/shot-2.jpg?v=ea967339","w":1600,"h":1000},{"src":"media/kube-dash/shot-3.jpg?v=9c2f8cdc","w":1600,"h":1000},{"src":"media/kube-dash/shot-4.jpg?v=6bf7b462","w":1600,"h":1000}]},{"slug":"nexrad-mcp","name":"nexrad-mcp","shots":[{"src":"media/nexrad-mcp/shot-1.jpg?v=275a489b","w":1600,"h":1000},{"src":"media/nexrad-mcp/shot-2.jpg?v=c9c822ee","w":1600,"h":640},{"src":"media/nexrad-mcp/shot-3.jpg?v=0a845552","w":1600,"h":800},{"src":"media/nexrad-mcp/shot-4.jpg?v=7d96a17e","w":1280,"h":720}]},{"slug":"claude-plugins","name":"claude-plugins","shots":[{"src":"media/claude-plugins/shot-1.jpg?v=ff1cb3be","w":1600,"h":914},{"src":"media/claude-plugins/shot-2.jpg?v=b22d19d7","w":1600,"h":914},{"src":"media/claude-plugins/shot-3.jpg?v=92a2c23c","w":1325,"h":1188}]},{"slug":"trim-lab","name":"Trim Lab","shots":[{"src":"media/trim-lab/shot-1.jpg?v=7f09cd6a","w":1600,"h":1000},{"src":"media/trim-lab/shot-2.jpg?v=9e679fde","w":1600,"h":1000},{"src":"media/trim-lab/shot-3.jpg?v=0eb746ac","w":1600,"h":1000},{"src":"media/trim-lab/shot-4.jpg?v=2c357b45","w":1600,"h":1000}]},{"slug":"ecg","name":"ECG Studio","shots":[{"src":"media/ecg/shot-1.jpg?v=0c120791","w":1600,"h":1000},{"src":"media/ecg/shot-2.jpg?v=bf253461","w":1600,"h":1000},{"src":"media/ecg/shot-3.jpg?v=ebc88abf","w":1600,"h":1000},{"src":"media/ecg/shot-4.jpg?v=36cd81e4","w":1600,"h":1000}]},{"slug":"floatplan","name":"Pier 25 Float Plan","shots":[{"src":"media/floatplan/shot-1.jpg?v=af308d31","w":1600,"h":1000},{"src":"media/floatplan/shot-2.jpg?v=c4d8e841","w":1600,"h":1000},{"src":"media/floatplan/shot-3.jpg?v=e830e782","w":1600,"h":1000}]}]}</script>
+<script type="application/json" id="data">{"projects":[{"slug":"argos","name":"Argos","shots":[{"src":"media/argos/shot-1.jpg?v=fb2d9d63","w":1600,"h":1000},{"src":"media/argos/shot-2.jpg?v=17a4f750","w":1600,"h":1000},{"src":"media/argos/shot-3.jpg?v=24d76532","w":1600,"h":1000},{"src":"media/argos/shot-4.jpg?v=f7022396","w":1600,"h":1000}]},{"slug":"grove","name":"grove","shots":[{"src":"media/grove/shot-1.jpg?v=72076e1a","w":1600,"h":1000},{"src":"media/grove/shot-2.jpg?v=d8eefa65","w":1600,"h":1000},{"src":"media/grove/shot-3.jpg?v=62cd4f70","w":1600,"h":1000},{"src":"media/grove/shot-4.jpg?v=b4f6c379","w":1600,"h":1000}]},{"slug":"byos","name":"BYOS","shots":[{"src":"media/byos/shot-1.jpg?v=65e29123","w":1600,"h":1000},{"src":"media/byos/shot-2.jpg?v=78958072","w":1600,"h":1280},{"src":"media/byos/shot-3.jpg?v=8b7b1bc3","w":1600,"h":1000},{"src":"media/byos/shot-4.jpg?v=bc8246ef","w":1600,"h":1000}]},{"slug":"skim","name":"Skim","shots":[{"src":"media/skim/shot-1.jpg?v=46eee71a","w":1600,"h":1000},{"src":"media/skim/shot-2.jpg?v=c36c7e9b","w":1600,"h":1000},{"src":"media/skim/shot-3.jpg?v=b9e954b1","w":1600,"h":1000},{"src":"media/skim/shot-4.jpg?v=f53ff32a","w":1600,"h":1000}]},{"slug":"tracked","name":"Tracked","shots":[{"src":"media/tracked/shot-1.jpg?v=42d6cdad","w":1600,"h":1000},{"src":"media/tracked/shot-2.jpg?v=75962eaf","w":1600,"h":1000},{"src":"media/tracked/shot-3.jpg?v=38082d14","w":1600,"h":1000},{"src":"media/tracked/shot-4.jpg?v=67b42ecf","w":1600,"h":1000}]},{"slug":"orbital-empire","name":"Orbital Empire","shots":[{"src":"media/orbital-empire/shot-1.jpg?v=72082054","w":1600,"h":1000},{"src":"media/orbital-empire/shot-2.jpg?v=ad4de61d","w":1600,"h":1000},{"src":"media/orbital-empire/shot-3.jpg?v=c2718ccd","w":1600,"h":1000},{"src":"media/orbital-empire/shot-4.jpg?v=867d5bfc","w":1600,"h":1000}]},{"slug":"etude","name":"Étude","shots":[{"src":"media/etude/shot-1.jpg?v=8c7b1e9d","w":1600,"h":1000},{"src":"media/etude/shot-2.jpg?v=dae71437","w":1600,"h":1000},{"src":"media/etude/shot-3.jpg?v=98846311","w":1600,"h":1000},{"src":"media/etude/shot-4.jpg?v=69e669ac","w":1600,"h":1000}]},{"slug":"corto","name":"Corto","shots":[{"src":"media/corto/shot-1.jpg?v=97632d91","w":1600,"h":1000},{"src":"media/corto/shot-2.jpg?v=bb19b090","w":1600,"h":1000},{"src":"media/corto/shot-3.jpg?v=8403b359","w":1600,"h":1000},{"src":"media/corto/shot-4.jpg?v=81a299e7","w":1600,"h":1000}]},{"slug":"turbol","name":"Turbol","shots":[{"src":"media/turbol/shot-1.jpg?v=47714558","w":1600,"h":1000},{"src":"media/turbol/shot-2.jpg?v=596cba04","w":1600,"h":1000},{"src":"media/turbol/shot-3.jpg?v=04ff1b7b","w":1600,"h":1000},{"src":"media/turbol/shot-4.jpg?v=c1065e27","w":1600,"h":1000}]},{"slug":"jev-polls","name":"Jev Polls","shots":[{"src":"media/jev-polls/shot-1.jpg?v=13d964e0","w":1600,"h":1000},{"src":"media/jev-polls/shot-2.jpg?v=6de3ec2a","w":1600,"h":1000},{"src":"media/jev-polls/shot-3.jpg?v=a3419d0c","w":1600,"h":1000},{"src":"media/jev-polls/shot-4.jpg?v=0c9e6a65","w":1600,"h":1000}]},{"slug":"motive","name":"Motive","shots":[{"src":"media/motive/shot-1.jpg?v=76f976fe","w":1600,"h":1000},{"src":"media/motive/shot-2.jpg?v=54a003a6","w":1600,"h":1000},{"src":"media/motive/shot-3.jpg?v=3eb4d091","w":1600,"h":1000},{"src":"media/motive/shot-4.jpg?v=5eadde1f","w":1600,"h":1000}]},{"slug":"landgrab","name":"landgrab","shots":[{"src":"media/landgrab/shot-1.jpg?v=0dd46f14","w":1600,"h":1000},{"src":"media/landgrab/shot-2.jpg?v=c88e5b8d","w":1600,"h":1000},{"src":"media/landgrab/shot-3.jpg?v=4586c380","w":1600,"h":1000},{"src":"media/landgrab/shot-4.jpg?v=d98b57b5","w":1600,"h":1000}]},{"slug":"specify","name":"Specify","shots":[{"src":"media/specify/shot-1.jpg?v=4a319ba5","w":1600,"h":1000},{"src":"media/specify/shot-2.jpg?v=734f5698","w":1600,"h":1000},{"src":"media/specify/shot-3.jpg?v=3b208b95","w":1600,"h":1000},{"src":"media/specify/shot-4.jpg?v=1cd9735c","w":1600,"h":1000}]},{"slug":"renzo","name":"Renzo","shots":[{"src":"media/renzo/shot-1.jpg?v=4815cd07","w":1600,"h":1000},{"src":"media/renzo/shot-2.jpg?v=a0957118","w":1600,"h":1000},{"src":"media/renzo/shot-3.jpg?v=412d0cdb","w":555,"h":1200},{"src":"media/renzo/shot-4.jpg?v=4d939638","w":1600,"h":1030}]},{"slug":"tapeze","name":"Tapeze","shots":[{"src":"media/tapeze/shot-1.jpg?v=64f20b25","w":554,"h":1200},{"src":"media/tapeze/shot-2.jpg?v=2cc30587","w":554,"h":1200},{"src":"media/tapeze/shot-3.jpg?v=c7242b57","w":552,"h":1200},{"src":"media/tapeze/shot-4.jpg?v=a51b8f58","w":552,"h":1200}]},{"slug":"local-assistant","name":"assistant","shots":[{"src":"media/local-assistant/shot-1.jpg?v=2549b4c5","w":1600,"h":950},{"src":"media/local-assistant/shot-2.jpg?v=3469a82f","w":1600,"h":1012}]},{"slug":"mockify","name":"mockify","shots":[{"src":"media/mockify/shot-1.jpg?v=34426594","w":1000,"h":826},{"src":"media/mockify/shot-2.jpg?v=fbfbd185","w":980,"h":640},{"src":"media/mockify/shot-3.jpg?v=af73b7a6","w":1600,"h":260},{"src":"media/mockify/shot-4.jpg?v=d57522a3","w":1000,"h":826}]},{"slug":"kube-dash","name":"kube-dash","shots":[{"src":"media/kube-dash/shot-1.jpg?v=a308325c","w":1600,"h":1000},{"src":"media/kube-dash/shot-2.jpg?v=ea967339","w":1600,"h":1000},{"src":"media/kube-dash/shot-3.jpg?v=9c2f8cdc","w":1600,"h":1000},{"src":"media/kube-dash/shot-4.jpg?v=6bf7b462","w":1600,"h":1000}]},{"slug":"nexrad-mcp","name":"nexrad-mcp","shots":[{"src":"media/nexrad-mcp/shot-1.jpg?v=275a489b","w":1600,"h":1000},{"src":"media/nexrad-mcp/shot-2.jpg?v=c9c822ee","w":1600,"h":640},{"src":"media/nexrad-mcp/shot-3.jpg?v=0a845552","w":1600,"h":800},{"src":"media/nexrad-mcp/shot-4.jpg?v=7d96a17e","w":1280,"h":720}]},{"slug":"claude-plugins","name":"claude-plugins","shots":[{"src":"media/claude-plugins/shot-1.jpg?v=ff1cb3be","w":1600,"h":914},{"src":"media/claude-plugins/shot-2.jpg?v=b22d19d7","w":1600,"h":914},{"src":"media/claude-plugins/shot-3.jpg?v=92a2c23c","w":1325,"h":1188}]},{"slug":"trim-lab","name":"Trim Lab","shots":[{"src":"media/trim-lab/shot-1.jpg?v=7f09cd6a","w":1600,"h":1000},{"src":"media/trim-lab/shot-2.jpg?v=9e679fde","w":1600,"h":1000},{"src":"media/trim-lab/shot-3.jpg?v=0eb746ac","w":1600,"h":1000},{"src":"media/trim-lab/shot-4.jpg?v=2c357b45","w":1600,"h":1000}]},{"slug":"ecg","name":"ECG Studio","shots":[{"src":"media/ecg/shot-1.jpg?v=0c120791","w":1600,"h":1000},{"src":"media/ecg/shot-2.jpg?v=bf253461","w":1600,"h":1000},{"src":"media/ecg/shot-3.jpg?v=ebc88abf","w":1600,"h":1000},{"src":"media/ecg/shot-4.jpg?v=36cd81e4","w":1600,"h":1000}]},{"slug":"floatplan","name":"Pier 25 Float Plan","shots":[{"src":"media/floatplan/shot-1.jpg?v=af308d31","w":1600,"h":1000},{"src":"media/floatplan/shot-2.jpg?v=c4d8e841","w":1600,"h":1000},{"src":"media/floatplan/shot-3.jpg?v=e830e782","w":1600,"h":1000}]}]}</script>
 <script>
 (() => {
   'use strict';
